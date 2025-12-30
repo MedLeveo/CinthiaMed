@@ -1,0 +1,1608 @@
+{
+  "meta_info": {
+    "version": "1.0",
+    "description": "Banco de dados de Escores Clínicos para CinthiaMed",
+    "language": "pt-BR"
+  },
+  "categories": {
+    "Neurologia": [
+      "pecarn_tce",
+      "nihss",
+      "glasgow",
+      "rass",
+      "abcd2",
+      "nexus_cranio",
+      "nexus_coluna",
+      "regra_canadense_tc",
+      "ottawa_hsa",
+      "4at"
+    ],
+    "Cardiologia": [
+      "qtc",
+      "cha2ds2_vasc",
+      "timi",
+      "heart",
+      "framingham",
+      "pam",
+      "indice_choque",
+      "mortalidade_endarterectomia"
+    ],
+    "Pneumologia": [
+      "curb65",
+      "psi_port",
+      "qsofa",
+      "sofa",
+      "news2",
+      "6mwt"
+    ],
+    "Gastroenterologia": [
+      "rockall",
+      "glasgow_blatchford",
+      "alvarado",
+      "air"
+    ],
+    "Emergência": [
+      "wells_tep",
+      "wells_tvp",
+      "genebra",
+      "risco_genebra_tev",
+      "sincope_canadense",
+      "pesi",
+      "perc",
+      "hestia",
+      "edacs",
+      "dissecacao_aortica",
+      "nexus_torax",
+      "centor",
+      "feverpain",
+      "2helps2b"
+    ],
+    "UTI": [
+      "macocha",
+      "sgarbossa"
+    ],
+    "Calculadoras Gerais": [
+      "anion_gap",
+      "idade_gestacional",
+      "imc_asc",
+      "osmolalidade",
+      "correcao_calcio",
+      "correcao_sodio",
+      "deficit_agua_livre",
+      "depuracao_creatinina",
+      "mdrd",
+      "tfg_ckd_epi",
+      "peso_corporal_ideal"
+    ],
+    "Psiquiatria": [
+      "ciwa_ar"
+    ]
+  },
+  "scores": {
+    "pecarn_tce": {
+      "name": "Algoritmo PECARN para TC de Crânio em Trauma Cranioencefálico Pediátrico",
+      "category": "Neurologia",
+      "description": "Prediz necessidade de TC em crianças com TCE",
+      "inputs": [
+        {"name": "idade", "type": "select", "options": ["< 2 anos", "≥ 2 anos"], "required": true},
+        {"name": "glasgow", "type": "number", "min": 3, "max": 15, "required": true},
+        {"name": "alteracao_mental", "type": "boolean", "label": "Alteração do estado mental"},
+        {"name": "fratura_cranio", "type": "boolean", "label": "Fratura de crânio palpável"},
+        {"name": "hematoma_escalpo", "type": "boolean", "label": "Hematoma de escalpo (se < 2 anos)"},
+        {"name": "perda_consciencia", "type": "select", "options": ["Não", "> 5 segundos", "Segundo relato dos pais"]},
+        {"name": "mecanismo_grave", "type": "boolean", "label": "Mecanismo grave de lesão"},
+        {"name": "comportamento_anormal", "type": "boolean", "label": "Comportamento anormal segundo pais"}
+      ],
+      "criteria": [
+        "Aplicável a crianças com TCE sem histórico de distúrbios de coagulação",
+        "TCE deve ter ocorrido nas últimas 24 horas",
+        "Glasgow inicial ≥ 14"
+      ],
+      "observations": [
+        "Score muito sensível para lesões cerebrais clinicamente importantes",
+        "Reduz exposição desnecessária à radiação em crianças",
+        "Divide estratificação por idade (< 2 anos e ≥ 2 anos)"
+      ],
+      "reference": "Kuppermann N, et al. Lancet. 2009;374(9696):1160-70.",
+      "interpretation": {
+        "baixo_risco": "Risco < 0.02% de lesão cerebral importante. TC geralmente não indicada.",
+        "medio_risco": "Risco intermediário. Observação vs TC.",
+        "alto_risco": "TC indicada"
+      }
+    },
+    "anion_gap": {
+      "name": "Calculadora de Ânion Gap",
+      "category": "Calculadoras Gerais",
+      "description": "Calcula o ânion gap sérico",
+      "inputs": [
+        {"name": "sodio", "type": "number", "unit": "mEq/L", "required": true},
+        {"name": "cloro", "type": "number", "unit": "mEq/L", "required": true},
+        {"name": "bicarbonato", "type": "number", "unit": "mEq/L", "required": true},
+        {"name": "albumina", "type": "number", "unit": "g/dL", "required": false, "label": "Albumina (opcional para ajuste)"}
+      ],
+      "formula": "AG = Na - (Cl + HCO3)",
+      "formula_ajustada": "AG corrigido = AG + 2.5 × (4 - Albumina)",
+      "criteria": [
+        "Usado para avaliar acidose metabólica",
+        "Ajuste pela albumina quando disponível"
+      ],
+      "observations": [
+        "Valor normal: 8-12 mEq/L (sem ajuste) ou 3-11 mEq/L (com K+)",
+        "AG elevado sugere acidose metabólica com ânion gap aumentado",
+        "Causas de AG elevado: MUDPILES (Metanol, Uremia, DKA, Paraldehyde, Iron/Isoniazid, Lactic acidosis, Ethylene glycol, Salicylates)"
+      ],
+      "reference": "Emmett M, Narins RG. Medicine. 1977;56(1):38-54.",
+      "interpretation": {
+        "normal": "8-12 mEq/L",
+        "elevado": "> 12 mEq/L - Investigar causas de acidose com AG aumentado",
+        "baixo": "< 8 mEq/L - Hipoalbuminemia, mieloma múltiplo"
+      }
+    },
+    "idade_gestacional": {
+      "name": "Calculadora de Idade Gestacional",
+      "category": "Calculadoras Gerais",
+      "description": "Calcula idade gestacional pela DUM ou ultrassom",
+      "inputs": [
+        {"name": "metodo", "type": "select", "options": ["DUM", "Ultrassom"], "required": true},
+        {"name": "data_dum", "type": "date", "label": "Data da Última Menstruação", "showIf": {"metodo": "DUM"}},
+        {"name": "data_us", "type": "date", "label": "Data do Ultrassom", "showIf": {"metodo": "Ultrassom"}},
+        {"name": "ig_us", "type": "number", "unit": "semanas", "label": "IG no Ultrassom", "showIf": {"metodo": "Ultrassom"}}
+      ],
+      "formula": "IG = (Data atual - DUM) / 7 dias",
+      "criteria": [
+        "DUM confiável (ciclos regulares)",
+        "Ultrassom precoce mais preciso (< 20 semanas)"
+      ],
+      "observations": [
+        "Termo: 37-42 semanas",
+        "Pré-termo: < 37 semanas",
+        "Pós-termo: > 42 semanas",
+        "US do 1º trimestre tem margem de erro de ±5-7 dias"
+      ],
+      "reference": "ACOG Committee Opinion No. 700. Obstet Gynecol. 2017;129(5):e150-e154."
+    },
+    "imc_asc": {
+      "name": "Calculadora de IMC e ASC",
+      "category": "Calculadoras Gerais",
+      "description": "Calcula Índice de Massa Corporal e Área de Superfície Corporal",
+      "inputs": [
+        {"name": "peso", "type": "number", "unit": "kg", "required": true},
+        {"name": "altura", "type": "number", "unit": "cm", "required": true},
+        {"name": "formula_asc", "type": "select", "options": ["Mosteller", "DuBois", "Haycock"], "default": "Mosteller"}
+      ],
+      "formula_imc": "IMC = Peso (kg) / Altura² (m)",
+      "formula_asc_mosteller": "ASC = √[(Altura × Peso) / 3600]",
+      "formula_asc_dubois": "ASC = 0.007184 × Altura^0.725 × Peso^0.425",
+      "criteria": [
+        "Válido para adultos",
+        "IMC não distingue massa muscular de gordura"
+      ],
+      "observations": [
+        "IMC < 18.5: Baixo peso",
+        "IMC 18.5-24.9: Normal",
+        "IMC 25-29.9: Sobrepeso",
+        "IMC ≥ 30: Obesidade",
+        "ASC usado para dosagem de quimioterápicos"
+      ],
+      "reference": "WHO. BMI Classification. Mosteller RD. N Engl J Med. 1987;317(17):1098."
+    },
+    "qtc": {
+      "name": "Calculadora de Intervalo QT Corrigido (QTc)",
+      "category": "Cardiologia",
+      "description": "Corrige o intervalo QT pela frequência cardíaca",
+      "inputs": [
+        {"name": "qt", "type": "number", "unit": "ms", "required": true, "label": "Intervalo QT"},
+        {"name": "fc", "type": "number", "unit": "bpm", "required": true, "label": "Frequência Cardíaca"},
+        {"name": "formula", "type": "select", "options": ["Bazett", "Fridericia", "Framingham"], "default": "Bazett"}
+      ],
+      "formula_bazett": "QTc = QT / √RR (onde RR = 60/FC)",
+      "formula_fridericia": "QTc = QT / RR^(1/3)",
+      "formula_framingham": "QTc = QT + 0.154(1 - RR)",
+      "criteria": [
+        "Bazett: fórmula mais comum, superestima em taquicardia",
+        "Fridericia: melhor em FC extremas"
+      ],
+      "observations": [
+        "Normal: < 450ms (homens), < 460ms (mulheres)",
+        "Limítrofe: 450-470ms (H), 460-480ms (M)",
+        "Prolongado: > 470ms (H), > 480ms (M)",
+        "QTc > 500ms: Alto risco de Torsades de Pointes"
+      ],
+      "reference": "Bazett HC. Heart. 1920;7:353-70. Fridericia LS. Acta Med Scand. 1920;53:469-86.",
+      "alerts": {
+        "critical": "> 500ms - Risco de arritmia fatal"
+      }
+    },
+    "osmolalidade": {
+      "name": "Calculadora de Osmolalidade/Osmolaridade Sérica",
+      "category": "Calculadoras Gerais",
+      "description": "Calcula osmolalidade sérica e gap osmolar",
+      "inputs": [
+        {"name": "sodio", "type": "number", "unit": "mEq/L", "required": true},
+        {"name": "glicose", "type": "number", "unit": "mg/dL", "required": true},
+        {"name": "ureia", "type": "number", "unit": "mg/dL", "required": true},
+        {"name": "osm_medida", "type": "number", "unit": "mOsm/kg", "required": false, "label": "Osmolalidade medida (para gap)"}
+      ],
+      "formula": "Osm calculada = 2×Na + Glicose/18 + Ureia/2.8",
+      "formula_gap": "Gap osmolar = Osm medida - Osm calculada",
+      "criteria": [
+        "Útil em alterações de sódio, coma, intoxicações"
+      ],
+      "observations": [
+        "Normal: 285-295 mOsm/kg",
+        "Gap osmolar normal: < 10 mOsm/kg",
+        "Gap > 10: suspeitar de metanol, etilenoglicol, etanol"
+      ],
+      "reference": "Purssell RA, et al. Ann Emerg Med. 2001;38(6):653-9."
+    },
+    "ciwa_ar": {
+      "name": "CIWA-Ar para Síndrome de Abstinência Alcoólica",
+      "category": "Psiquiatria",
+      "description": "Avalia gravidade da abstinência alcoólica",
+      "inputs": [
+        {"name": "nausea", "type": "select", "options": ["0-Nenhuma", "1-Leve", "2-", "3-", "4-Náusea intermitente", "5-", "6-", "7-Náusea constante/vômitos"], "score": [0,1,2,3,4,5,6,7]},
+        {"name": "tremor", "type": "select", "options": ["0-Nenhum", "1-Não visível mas sentido", "2-", "3-", "4-Moderado com braços estendidos", "5-", "6-", "7-Grave"], "score": [0,1,2,3,4,5,6,7]},
+        {"name": "sudorese", "type": "select", "options": ["0-Nenhuma", "1-Palmas úmidas", "2-", "3-", "4-Suor na testa", "5-", "6-", "7-Sudorese profusa"], "score": [0,1,2,3,4,5,6,7]},
+        {"name": "ansiedade", "type": "select", "options": ["0-Nenhuma", "1-Leve", "2-", "3-", "4-Moderada", "5-", "6-", "7-Pânico"], "score": [0,1,2,3,4,5,6,7]},
+        {"name": "agitacao", "type": "select", "options": ["0-Normal", "1-Leve inquietação", "2-", "3-", "4-Moderada", "5-", "6-", "7-Grave"], "score": [0,1,2,3,4,5,6,7]},
+        {"name": "disturbios_tateis", "type": "select", "options": ["0-Nenhum", "1-Leve", "2-Leve a moderado", "3-Moderado", "4-Moderado a grave", "5-Grave", "6-Extremo"], "score": [0,1,2,3,4,5,6]},
+        {"name": "disturbios_auditivos", "type": "select", "options": ["0-Nenhum", "1-Leve", "2-Leve a moderado", "3-Moderado", "4-Moderado a grave", "5-Grave", "6-Extremo"], "score": [0,1,2,3,4,5,6]},
+        {"name": "disturbios_visuais", "type": "select", "options": ["0-Nenhum", "1-Leve", "2-Leve a moderado", "3-Moderado", "4-Moderado a grave", "5-Grave", "6-Extremo"], "score": [0,1,2,3,4,5,6]},
+        {"name": "cefaleia", "type": "select", "options": ["0-Nenhuma", "1-Leve", "2-", "3-", "4-Moderada", "5-", "6-", "7-Grave"], "score": [0,1,2,3,4,5,6,7]},
+        {"name": "orientacao", "type": "select", "options": ["0-Orientado", "1-Incerto sobre data", "2-Desorientado para data", "3-Desorientado para local e/ou pessoa", "4-Desorientado completo"], "score": [0,1,2,3,4]}
+      ],
+      "formula": "Soma dos pontos (0-67)",
+      "criteria": [
+        "Aplicar a cada 4-8 horas em pacientes em abstinência",
+        "Guia tratamento com benzodiazepínicos"
+      ],
+      "observations": [
+        "< 8: Abstinência leve",
+        "8-15: Abstinência moderada",
+        "> 15: Abstinência grave",
+        "Repetir avaliação para titular medicação"
+      ],
+      "reference": "Sullivan JT, et al. Br J Addict. 1989;84(11):1353-7.",
+      "interpretation": {
+        "leve": "< 8 pontos - Observação, suporte",
+        "moderada": "8-15 pontos - Benzodiazepínicos em doses moderadas",
+        "grave": "> 15 pontos - Benzodiazepínicos em altas doses, UTI se > 20"
+      }
+    },
+    "correcao_calcio": {
+      "name": "Correção de Cálcio",
+      "category": "Calculadoras Gerais",
+      "description": "Corrige cálcio sérico pela albumina",
+      "inputs": [
+        {"name": "calcio", "type": "number", "unit": "mg/dL", "required": true, "label": "Cálcio sérico total"},
+        {"name": "albumina", "type": "number", "unit": "g/dL", "required": true}
+      ],
+      "formula": "Ca corrigido = Ca medido + 0.8 × (4 - Albumina)",
+      "criteria": [
+        "Necessário quando albumina < 4 g/dL",
+        "Hipoalbuminemia subestima hipocalcemia real"
+      ],
+      "observations": [
+        "Cálcio normal: 8.5-10.5 mg/dL",
+        "Sempre corrigir antes de interpretar hipocalcemia",
+        "Cálcio ionizado é padrão-ouro mas nem sempre disponível"
+      ],
+      "reference": "Payne RB, et al. Br Med J. 1973;4(5893):643-6."
+    },
+    "correcao_sodio": {
+      "name": "Correção de Sódio",
+      "category": "Calculadoras Gerais",
+      "description": "Corrige sódio sérico pela glicose",
+      "inputs": [
+        {"name": "sodio", "type": "number", "unit": "mEq/L", "required": true},
+        {"name": "glicose", "type": "number", "unit": "mg/dL", "required": true}
+      ],
+      "formula": "Na corrigido = Na medido + 0.016 × (Glicose - 100)",
+      "formula_alternativa": "Na corrigido = Na medido + 0.024 × (Glicose - 100)",
+      "criteria": [
+        "Usar em hiperglicemia > 200 mg/dL",
+        "Hiperglicemia dilui o sódio sérico"
+      ],
+      "observations": [
+        "Fator 0.016: correção clássica",
+        "Fator 0.024: mais usado em hiperglicemia grave (> 400 mg/dL)",
+        "Hiponatremia pode estar mascarada em DKA"
+      ],
+      "reference": "Katz MA. N Engl J Med. 1973;289(16):843-4."
+    },
+    "framingham": {
+      "name": "Escore de Framingham (Risco Cardiovascular)",
+      "category": "Cardiologia",
+      "description": "Calcula risco de evento cardiovascular em 10 anos",
+      "inputs": [
+        {"name": "idade", "type": "number", "unit": "anos", "required": true},
+        {"name": "sexo", "type": "select", "options": ["Masculino", "Feminino"], "required": true},
+        {"name": "colesterol_total", "type": "number", "unit": "mg/dL", "required": true},
+        {"name": "hdl", "type": "number", "unit": "mg/dL", "required": true},
+        {"name": "pas", "type": "number", "unit": "mmHg", "required": true, "label": "Pressão Arterial Sistólica"},
+        {"name": "tratamento_ha", "type": "boolean", "label": "Em tratamento para hipertensão"},
+        {"name": "tabagista", "type": "boolean", "label": "Tabagista"},
+        {"name": "diabetes", "type": "boolean", "label": "Diabetes"}
+      ],
+      "formula": "Pontuação complexa baseada em tabelas de risco",
+      "criteria": [
+        "Idade 30-79 anos",
+        "Sem doença cardiovascular prévia"
+      ],
+      "observations": [
+        "< 10%: Baixo risco",
+        "10-20%: Risco intermediário",
+        "> 20%: Alto risco",
+        "Guia indicação de estatinas"
+      ],
+      "reference": "D'Agostino RB, et al. Circulation. 2008;117(6):743-53."
+    },
+    "hestia": {
+      "name": "Critérios de Hestia (TEP em Casa)",
+      "category": "Emergência",
+      "description": "Define se paciente com TEP pode ser tratado ambulatorialmente",
+      "inputs": [
+        {"name": "instavel", "type": "boolean", "label": "Hemodinamicamente instável"},
+        {"name": "trombolise", "type": "boolean", "label": "Necessidade de trombólise/trombectomia"},
+        {"name": "sangramento", "type": "boolean", "label": "Sangramento ativo ou alto risco"},
+        {"name": "o2", "type": "boolean", "label": "Necessita > 24h de O2 para SpO2 > 90%"},
+        {"name": "tep_anticoag", "type": "boolean", "label": "TEP durante anticoagulação adequada"},
+        {"name": "dor_grave", "type": "boolean", "label": "Dor grave necessitando IV > 24h"},
+        {"name": "motivo_social", "type": "boolean", "label": "Razão médica ou social para internação > 24h"},
+        {"name": "cr_clearance", "type": "boolean", "label": "Clearance creatinina < 30 mL/min com HBPM"},
+        {"name": "cirrose", "type": "boolean", "label": "Insuficiência hepática grave"},
+        {"name": "gestante", "type": "boolean", "label": "Gestante"},
+        {"name": "hist_hit", "type": "boolean", "label": "História de HIT (Trombocitopenia induzida por heparina)"}
+      ],
+      "formula": "Todos os critérios devem ser NÃO",
+      "criteria": [
+        "Aplicável apenas a TEP confirmado",
+        "sPESI 0 também é pré-requisito"
+      ],
+      "observations": [
+        "Se TODOS forem NÃO → Candidato a tratamento ambulatorial",
+        "Se QUALQUER for SIM → Considerar internação",
+        "Sempre avaliar suporte domiciliar adequado"
+      ],
+      "reference": "Zondag W, et al. Arch Intern Med. 2011;171(21):1922-8.",
+      "interpretation": {
+        "ambulatorio": "Todos NÃO - Tratamento ambulatorial seguro",
+        "internar": "Qualquer SIM - Internação indicada"
+      }
+    },
+    "sgarbossa": {
+      "name": "Critérios de Sgarbossa (IAM com BRE)",
+      "category": "UTI",
+      "description": "Diagnostica IAM na presença de bloqueio de ramo esquerdo",
+      "inputs": [
+        {"name": "st_elevacao_concordante", "type": "boolean", "label": "Elevação de ST ≥ 1mm concordante com QRS"},
+        {"name": "st_depressao_v1v3", "type": "boolean", "label": "Depressão de ST ≥ 1mm em V1-V3"},
+        {"name": "st_elevacao_discordante", "type": "boolean", "label": "Elevação de ST ≥ 5mm discordante com QRS"}
+      ],
+      "formula": "Critério 1: 5 pontos, Critério 2: 3 pontos, Critério 3: 2 pontos",
+      "criteria": [
+        "Aplicar apenas em BRE ou ritmo de marca-passo",
+        "BRE novo ou presumivelmente novo"
+      ],
+      "observations": [
+        "≥ 3 pontos: Altamente sugestivo de IAM (especificidade > 90%)",
+        "Critério modificado: ST/S ratio > 0.25 (mais sensível)",
+        "BRE dificulta diagnóstico de IAM - Sgarbossa ajuda"
+      ],
+      "reference": "Sgarbossa EB, et al. N Engl J Med. 1996;334(8):481-7. Smith SW, et al. Ann Emerg Med. 2012;60(6):766-76.",
+      "interpretation": {
+        "positivo": "≥ 3 pontos - IAM provável, considerar cateterismo urgente",
+        "negativo": "< 3 pontos - Não exclui IAM, usar troponina seriada"
+      }
+    },
+    "wells_tep": {
+      "name": "Escore de Wells (TEP)",
+      "category": "Emergência",
+      "description": "Estratifica probabilidade de tromboembolismo pulmonar",
+      "inputs": [
+        {"name": "sinais_tvp", "type": "boolean", "label": "Sinais clínicos de TVP", "pontos": 3},
+        {"name": "tep_mais_provavel", "type": "boolean", "label": "TEP mais provável que diagnósticos alternativos", "pontos": 3},
+        {"name": "fc", "type": "boolean", "label": "FC > 100 bpm", "pontos": 1.5},
+        {"name": "imobilizacao", "type": "boolean", "label": "Imobilização ou cirurgia nas últimas 4 semanas", "pontos": 1.5},
+        {"name": "tep_tvp_previo", "type": "boolean", "label": "TEP ou TVP prévio", "pontos": 1.5},
+        {"name": "hemoptise", "type": "boolean", "label": "Hemoptise", "pontos": 1},
+        {"name": "cancer", "type": "boolean", "label": "Câncer ativo", "pontos": 1}
+      ],
+      "formula": "Soma dos pontos",
+      "criteria": [
+        "Usar antes de exames de imagem",
+        "Combinar com D-dímero se baixa probabilidade"
+      ],
+      "observations": [
+        "≤ 4: Baixa probabilidade (~10%)",
+        "4.5-6: Probabilidade intermediária",
+        "> 6: Alta probabilidade (~40-50%)",
+        "Versão simplificada: ≤ 4 (improvável) vs > 4 (provável)"
+      ],
+      "reference": "Wells PS, et al. Thromb Haemost. 2000;83(3):416-20.",
+      "interpretation": {
+        "baixo": "≤ 4 pontos - D-dímero. Se negativo, exclui TEP",
+        "intermediario": "4.5-6 pontos - Angiotomografia indicada",
+        "alto": "> 6 pontos - Angiotomografia urgente"
+      }
+    },
+    "deficit_agua_livre": {
+      "name": "Déficit de Água Livre",
+      "category": "Calculadoras Gerais",
+      "description": "Calcula déficit de água livre na hipernatremia",
+      "inputs": [
+        {"name": "peso", "type": "number", "unit": "kg", "required": true},
+        {"name": "sodio_atual", "type": "number", "unit": "mEq/L", "required": true},
+        {"name": "sodio_alvo", "type": "number", "unit": "mEq/L", "default": 140},
+        {"name": "sexo", "type": "select", "options": ["Masculino", "Feminino"], "required": true}
+      ],
+      "formula": "Déficit = ACT × [(Na atual / Na alvo) - 1]",
+      "formula_act": "ACT = Peso × 0.6 (homens) ou 0.5 (mulheres)",
+      "criteria": [
+        "Usar em hipernatremia (Na > 145 mEq/L)",
+        "Corrigir lentamente: máximo 10-12 mEq/L em 24h"
+      ],
+      "observations": [
+        "Correção rápida pode causar edema cerebral",
+        "Monitorar Na a cada 2-4 horas",
+        "Considerar perdas insensíveis contínuas"
+      ],
+      "reference": "Adrogue HJ, Madias NE. N Engl J Med. 2000;342(20):1493-9."
+    },
+    "depuracao_creatinina": {
+      "name": "Depuração de Creatinina (Cockcroft-Gault)",
+      "category": "Calculadoras Gerais",
+      "description": "Estima função renal pela creatinina",
+      "inputs": [
+        {"name": "idade", "type": "number", "unit": "anos", "required": true},
+        {"name": "peso", "type": "number", "unit": "kg", "required": true},
+        {"name": "creatinina", "type": "number", "unit": "mg/dL", "required": true},
+        {"name": "sexo", "type": "select", "options": ["Masculino", "Feminino"], "required": true}
+      ],
+      "formula": "ClCr = [(140 - idade) × peso] / (72 × Cr) × 0.85 (se feminino)",
+      "criteria": [
+        "Não usar em IRA",
+        "Ajustar medicações pela função renal"
+      ],
+      "observations": [
+        "Normal: > 90 mL/min",
+        "IRC leve: 60-89",
+        "IRC moderada: 30-59",
+        "IRC grave: 15-29",
+        "IRC terminal: < 15 (diálise)"
+      ],
+      "reference": "Cockcroft DW, Gault MH. Nephron. 1976;16(1):31-41."
+    },
+    "mdrd": {
+      "name": "MDRD (Taxa de Filtração Glomerular)",
+      "category": "Calculadoras Gerais",
+      "description": "Estima TFG pela fórmula MDRD",
+      "inputs": [
+        {"name": "creatinina", "type": "number", "unit": "mg/dL", "required": true},
+        {"name": "idade", "type": "number", "unit": "anos", "required": true},
+        {"name": "sexo", "type": "select", "options": ["Masculino", "Feminino"], "required": true},
+        {"name": "raca", "type": "select", "options": ["Negra", "Outras"], "required": true}
+      ],
+      "formula": "TFG = 175 × Cr^(-1.154) × idade^(-0.203) × 0.742(F) × 1.212(negra)",
+      "criteria": [
+        "Menos precisa em TFG > 60",
+        "CKD-EPI preferível atualmente"
+      ],
+      "observations": [
+        "Estadiamento DRC igual ao CKD-EPI",
+        "Superestima TFG em obesos",
+        "Não ajustada para ASC"
+      ],
+      "reference": "Levey AS, et al. Ann Intern Med. 1999;131(6):461-70."
+    },
+    "tfg_ckd_epi": {
+      "name": "TFG CKD-EPI (2021)",
+      "category": "Calculadoras Gerais",
+      "description": "Taxa de Filtração Glomerular pela fórmula CKD-EPI sem raça",
+      "inputs": [
+        {"name": "creatinina", "type": "number", "unit": "mg/dL", "required": true},
+        {"name": "idade", "type": "number", "unit": "anos", "required": true},
+        {"name": "sexo", "type": "select", "options": ["Masculino", "Feminino"], "required": true}
+      ],
+      "formula": "142 × min(Cr/κ, 1)^α × max(Cr/κ, 1)^(-1.2) × 0.9938^idade × 1.012(F)",
+      "formula_params": "κ = 0.7 (F) ou 0.9 (M); α = -0.241 (F) ou -0.302 (M)",
+      "criteria": [
+        "Padrão-ouro atual para TFG",
+        "Versão 2021 remove ajuste de raça"
+      ],
+      "observations": [
+        "TFG ≥ 90: Normal",
+        "60-89: Leve redução",
+        "45-59: Redução leve-moderada (DRC G3a)",
+        "30-44: Redução moderada-grave (G3b)",
+        "15-29: Redução grave (G4)",
+        "< 15: Falência renal (G5)"
+      ],
+      "reference": "Inker LA, et al. N Engl J Med. 2021;385(19):1737-49.",
+      "alerts": {
+        "critical": "< 15 mL/min - Avaliar diálise"
+      }
+    },
+    "nihss": {
+      "name": "Escala NIHSS (AVC)",
+      "category": "Neurologia",
+      "description": "Quantifica gravidade de AVC isquêmico",
+      "inputs": [
+        {"name": "nivel_consciencia", "type": "select", "options": ["0-Alerta", "1-Sonolento", "2-Estupor", "3-Coma"], "score": [0,1,2,3]},
+        {"name": "perguntas", "type": "select", "options": ["0-Ambas corretas", "1-Uma correta", "2-Nenhuma correta"], "score": [0,1,2]},
+        {"name": "comandos", "type": "select", "options": ["0-Ambos corretos", "1-Um correto", "2-Nenhum correto"], "score": [0,1,2]},
+        {"name": "olhar", "type": "select", "options": ["0-Normal", "1-Paresia parcial", "2-Desvio forçado"], "score": [0,1,2]},
+        {"name": "campo_visual", "type": "select", "options": ["0-Normal", "1-Hemianopsia parcial", "2-Hemianopsia completa", "3-Cegueira bilateral"], "score": [0,1,2,3]},
+        {"name": "paralisia_facial", "type": "select", "options": ["0-Normal", "1-Leve", "2-Parcial", "3-Completa"], "score": [0,1,2,3]},
+        {"name": "motor_braco_esq", "type": "select", "options": ["0-Normal", "1-Queda em 10s", "2-Esforço contra gravidade", "3-Sem esforço contra gravidade", "4-Sem movimento"], "score": [0,1,2,3,4]},
+        {"name": "motor_braco_dir", "type": "select", "options": ["0-Normal", "1-Queda em 10s", "2-Esforço contra gravidade", "3-Sem esforço contra gravidade", "4-Sem movimento"], "score": [0,1,2,3,4]},
+        {"name": "motor_perna_esq", "type": "select", "options": ["0-Normal", "1-Queda em 5s", "2-Esforço contra gravidade", "3-Sem esforço contra gravidade", "4-Sem movimento"], "score": [0,1,2,3,4]},
+        {"name": "motor_perna_dir", "type": "select", "options": ["0-Normal", "1-Queda em 5s", "2-Esforço contra gravidade", "3-Sem esforço contra gravidade", "4-Sem movimento"], "score": [0,1,2,3,4]},
+        {"name": "ataxia", "type": "select", "options": ["0-Ausente", "1-Um membro", "2-Dois membros"], "score": [0,1,2]},
+        {"name": "sensibilidade", "type": "select", "options": ["0-Normal", "1-Perda leve-moderada", "2-Perda grave"], "score": [0,1,2]},
+        {"name": "linguagem", "type": "select", "options": ["0-Normal", "1-Afasia leve", "2-Afasia grave", "3-Mutismo"], "score": [0,1,2,3]},
+        {"name": "disartria", "type": "select", "options": ["0-Normal", "1-Leve-moderada", "2-Grave"], "score": [0,1,2]},
+        {"name": "extincao", "type": "select", "options": ["0-Normal", "1-Leve", "2-Grave"], "score": [0,1,2]}
+      ],
+      "formula": "Soma dos pontos (0-42)",
+      "criteria": [
+        "Aplicar em AVC agudo",
+        "Repetir para monitorar evolução"
+      ],
+      "observations": [
+        "0: Sem sintomas",
+        "1-4: AVC leve",
+        "5-15: AVC moderado",
+        "16-20: AVC moderado a grave",
+        "21-42: AVC grave",
+        "NIHSS ≥ 6: Considerar trombólise",
+        "NIHSS ≥ 10: Considerar trombectomia"
+      ],
+      "reference": "Brott T, et al. Stroke. 1989;20(7):864-70.",
+      "interpretation": {
+        "leve": "1-4 pontos",
+        "moderado": "5-15 pontos",
+        "grave": "16-20 pontos",
+        "muito_grave": "21-42 pontos"
+      }
+    },
+    "glasgow": {
+      "name": "Escala de Coma de Glasgow",
+      "category": "Neurologia",
+      "description": "Avalia nível de consciência",
+      "inputs": [
+        {"name": "abertura_ocular", "type": "select", "options": ["4-Espontânea", "3-Ao comando verbal", "2-À dor", "1-Nenhuma"], "score": [4,3,2,1]},
+        {"name": "resposta_verbal", "type": "select", "options": ["5-Orientado", "4-Confuso", "3-Palavras inapropriadas", "2-Sons incompreensíveis", "1-Nenhuma"], "score": [5,4,3,2,1]},
+        {"name": "resposta_motora", "type": "select", "options": ["6-Obedece comandos", "5-Localiza dor", "4-Retirada à dor", "3-Flexão anormal", "2-Extensão", "1-Nenhuma"], "score": [6,5,4,3,2,1]}
+      ],
+      "formula": "Soma: Ocular + Verbal + Motora (3-15)",
+      "criteria": [
+        "Usar em trauma, AVC, rebaixamento de consciência"
+      ],
+      "observations": [
+        "15: Totalmente alerta",
+        "13-14: TCE leve",
+        "9-12: TCE moderado",
+        "≤ 8: TCE grave (indicação de IOT)",
+        "3: Coma profundo"
+      ],
+      "reference": "Teasdale G, Jennett B. Lancet. 1974;2(7872):81-4.",
+      "alerts": {
+        "critical": "≤ 8 - Indicação de via aérea definitiva (IOT)"
+      }
+    },
+    "rass": {
+      "name": "Escala RASS (Sedação-Agitação)",
+      "category": "Neurologia",
+      "description": "Avalia nível de sedação em UTI",
+      "inputs": [
+        {"name": "estado", "type": "select", "options": [
+          "+4 - Combativo",
+          "+3 - Muito agitado",
+          "+2 - Agitado",
+          "+1 - Inquieto",
+          "0 - Alerta e calmo",
+          "-1 - Sonolento",
+          "-2 - Sedação leve",
+          "-3 - Sedação moderada",
+          "-4 - Sedação profunda",
+          "-5 - Não desperta"
+        ], "score": [4,3,2,1,0,-1,-2,-3,-4,-5]}
+      ],
+      "formula": "Escala de -5 a +4",
+      "criteria": [
+        "Padrão-ouro para sedação em UTI",
+        "Avaliar antes de administrar sedativos"
+      ],
+      "observations": [
+        "0: Alerta ideal",
+        "-2 a 0: Meta usual em UTI",
+        "-4/-5: Sedação profunda",
+        "+1 a +4: Agitação, avaliar delirium"
+      ],
+      "reference": "Sessler CN, et al. Am J Respir Crit Care Med. 2002;166(10):1338-44."
+    },
+    "abcd2": {
+      "name": "Escore ABCD² (AIT)",
+      "category": "Neurologia",
+      "description": "Estratifica risco de AVC após AIT",
+      "inputs": [
+        {"name": "idade", "type": "boolean", "label": "Idade ≥ 60 anos", "pontos": 1},
+        {"name": "pa", "type": "boolean", "label": "PA ≥ 140/90 mmHg", "pontos": 1},
+        {"name": "sintomas", "type": "select", "options": ["0-Outros", "1-Déficit motor isolado", "2-Déficit motor + fala"], "score": [0,1,2]},
+        {"name": "duracao", "type": "select", "options": ["0-< 10 min", "1-10-59 min", "2-≥ 60 min"], "score": [0,1,2]},
+        {"name": "diabetes", "type": "boolean", "label": "Diabetes", "pontos": 1}
+      ],
+      "formula": "Soma dos pontos (0-7)",
+      "criteria": [
+        "Aplicar em AIT confirmado",
+        "Usar nas primeiras 48h"
+      ],
+      "observations": [
+        "0-3: Baixo risco (1% AVC em 2 dias)",
+        "4-5: Risco moderado (4%)",
+        "6-7: Alto risco (8%)",
+        "Alto risco → Investigação urgente + antiagregação"
+      ],
+      "reference": "Johnston SC, et al. Lancet. 2007;369(9561):283-92.",
+      "interpretation": {
+        "baixo": "0-3 pontos - Investigação ambulatorial",
+        "moderado": "4-5 pontos - Internação para investigação",
+        "alto": "6-7 pontos - Internação urgente, antiagregação dupla"
+      }
+    },
+    "cha2ds2_vasc": {
+      "name": "Escore CHA₂DS₂-VASc (FA e AVC)",
+      "category": "Cardiologia",
+      "description": "Estratifica risco de AVC em fibrilação atrial",
+      "inputs": [
+        {"name": "icc", "type": "boolean", "label": "Insuficiência Cardíaca", "pontos": 1},
+        {"name": "has", "type": "boolean", "label": "Hipertensão", "pontos": 1},
+        {"name": "idade", "type": "select", "options": ["< 65", "65-74", "≥ 75"], "score": [0,1,2]},
+        {"name": "diabetes", "type": "boolean", "label": "Diabetes", "pontos": 1},
+        {"name": "avc_ait", "type": "boolean", "label": "AVC/AIT prévio", "pontos": 2},
+        {"name": "vascular", "type": "boolean", "label": "Doença vascular", "pontos": 1},
+        {"name": "sexo", "type": "select", "options": ["Masculino", "Feminino"], "label": "Sexo (feminino +1)"}
+      ],
+      "formula": "Soma dos pontos (0-9)",
+      "criteria": [
+        "Aplicável a FA não-valvar",
+        "Guia anticoagulação"
+      ],
+      "observations": [
+        "0 (homem) ou 1 (mulher): Sem anticoagulação",
+        "1 (homem): Considerar anticoagulação",
+        "≥ 2: Anticoagulação indicada",
+        "Cada ponto aumenta risco anual de AVC"
+      ],
+      "reference": "Lip GY, et al. Chest. 2010;137(2):263-72.",
+      "interpretation": {
+        "baixo": "0 (H) ou 1 (M) - Sem anticoagulação",
+        "intermediario": "1 (H) - Considerar anticoagulação",
+        "alto": "≥ 2 - Anticoagulação oral indicada"
+      }
+    },
+    "timi": {
+      "name": "Escore TIMI (SCA)",
+      "category": "Cardiologia",
+      "description": "Estratifica risco em síndrome coronariana aguda",
+      "inputs": [
+        {"name": "idade", "type": "boolean", "label": "Idade ≥ 65 anos", "pontos": 1},
+        {"name": "fatores_risco", "type": "boolean", "label": "≥ 3 fatores de risco (HAS, DM, tabagismo, dislipidemia, história familiar)", "pontos": 1},
+        {"name": "dac_conhecida", "type": "boolean", "label": "DAC conhecida (estenose ≥ 50%)", "pontos": 1},
+        {"name": "aas", "type": "boolean", "label": "Uso de AAS nos últimos 7 dias", "pontos": 1},
+        {"name": "angina_grave", "type": "boolean", "label": "≥ 2 episódios de angina nas 24h", "pontos": 1},
+        {"name": "st", "type": "boolean", "label": "Desvio de ST ≥ 0.5mm", "pontos": 1},
+        {"name": "marcadores", "type": "boolean", "label": "Marcadores cardíacos elevados", "pontos": 1}
+      ],
+      "formula": "Soma dos pontos (0-7)",
+      "criteria": [
+        "Usar em SCA sem supra de ST",
+        "Não aplicar em IAM com supra"
+      ],
+      "observations": [
+        "0-2: Baixo risco (5% eventos em 14 dias)",
+        "3-4: Risco intermediário (13%)",
+        "5-7: Alto risco (41%)",
+        "Alto risco → Estratégia invasiva precoce"
+      ],
+      "reference": "Antman EM, et al. JAMA. 2000;284(7):835-42.",
+      "interpretation": {
+        "baixo": "0-2 pontos - Estratégia conservadora",
+        "intermediario": "3-4 pontos - Cate dentro de 48-72h",
+        "alto": "5-7 pontos - Cate urgente < 24h"
+      }
+    },
+    "curb65": {
+      "name": "CURB-65 (Pneumonia)",
+      "category": "Pneumologia",
+      "description": "Estratifica gravidade em pneumonia adquirida na comunidade",
+      "inputs": [
+        {"name": "confusao", "type": "boolean", "label": "Confusão mental", "pontos": 1},
+        {"name": "ureia", "type": "boolean", "label": "Ureia > 42.8 mg/dL (ou > 7 mmol/L)", "pontos": 1},
+        {"name": "fr", "type": "boolean", "label": "FR ≥ 30 irpm", "pontos": 1},
+        {"name": "pa", "type": "boolean", "label": "PAS < 90 ou PAD ≤ 60 mmHg", "pontos": 1},
+        {"name": "idade", "type": "boolean", "label": "Idade ≥ 65 anos", "pontos": 1}
+      ],
+      "formula": "Soma dos pontos (0-5)",
+      "criteria": [
+        "Aplicar em PAC diagnosticada",
+        "Guia local de tratamento"
+      ],
+      "observations": [
+        "0-1: Tratamento ambulatorial (mortalidade < 3%)",
+        "2: Considerar internação breve (9%)",
+        "3-5: Internação hospitalar (15-40%)",
+        "4-5: Considerar UTI"
+      ],
+      "reference": "Lim WS, et al. Thorax. 2003;58(5):377-82.",
+      "interpretation": {
+        "baixo": "0-1 - Ambulatório",
+        "intermediario": "2 - Internação curta",
+        "alto": "3-5 - Internação (UTI se ≥ 4)"
+      }
+    },
+    "psi_port": {
+      "name": "PSI/PORT (Pneumonia)",
+      "category": "Pneumologia",
+      "description": "Índice de Severidade em Pneumonia",
+      "inputs": [
+        {"name": "idade", "type": "number", "unit": "anos", "required": true},
+        {"name": "sexo", "type": "select", "options": ["Masculino", "Feminino"], "required": true},
+        {"name": "lar_idosos", "type": "boolean", "label": "Residente de lar de idosos", "pontos": 10},
+        {"name": "neoplasia", "type": "boolean", "label": "Neoplasia", "pontos": 30},
+        {"name": "hepatopatia", "type": "boolean", "label": "Hepatopatia", "pontos": 20},
+        {"name": "icc", "type": "boolean", "label": "ICC", "pontos": 10},
+        {"name": "dvc", "type": "boolean", "label": "Doença cerebrovascular", "pontos": 10},
+        {"name": "nefropatia", "type": "boolean", "label": "Nefropatia", "pontos": 10},
+        {"name": "alteracao_mental", "type": "boolean", "label": "Alteração do estado mental", "pontos": 20},
+        {"name": "fr", "type": "number", "unit": "irpm", "label": "FR (≥30 = +20 pts)"},
+        {"name": "pas", "type": "number", "unit": "mmHg", "label": "PAS (<90 = +20 pts)"},
+        {"name": "temp", "type": "number", "unit": "°C", "label": "Temperatura (<35 ou ≥40 = +15 pts)"},
+        {"name": "fc", "type": "number", "unit": "bpm", "label": "FC (≥125 = +10 pts)"},
+        {"name": "ph", "type": "number", "label": "pH (<7.35 = +30 pts)"},
+        {"name": "ureia", "type": "number", "unit": "mg/dL", "label": "Ureia (≥64 = +20 pts)"},
+        {"name": "sodio", "type": "number", "unit": "mEq/L", "label": "Sódio (<130 = +20 pts)"},
+        {"name": "glicose", "type": "number", "unit": "mg/dL", "label": "Glicose (≥250 = +10 pts)"},
+        {"name": "hematocrito", "type": "number", "unit": "%", "label": "Hematócrito (<30% = +10 pts)"},
+        {"name": "pao2", "type": "number", "unit": "mmHg", "label": "PaO2 (<60 = +10 pts)"},
+        {"name": "derrame", "type": "boolean", "label": "Derrame pleural", "pontos": 10}
+      ],
+      "formula": "Pontuação complexa baseada em idade + comorbidades + sinais vitais + labs",
+      "criteria": [
+        "Mais complexo que CURB-65 mas mais preciso",
+        "Requer dados laboratoriais"
+      ],
+      "observations": [
+        "Classe I: < 51 pts (0.1% mortalidade) - Ambulatório",
+        "Classe II: 51-70 (0.6%) - Ambulatório",
+        "Classe III: 71-90 (2.8%) - Internação breve",
+        "Classe IV: 91-130 (8.2%) - Internação",
+        "Classe V: > 130 (29.2%) - UTI"
+      ],
+      "reference": "Fine MJ, et al. N Engl J Med. 1997;336(4):243-50."
+    },
+    "qsofa": {
+      "name": "qSOFA (Sepse)",
+      "category": "Pneumologia",
+      "description": "Quick SOFA - triagem rápida de sepse",
+      "inputs": [
+        {"name": "fr", "type": "boolean", "label": "FR ≥ 22 irpm", "pontos": 1},
+        {"name": "alteracao_mental", "type": "boolean", "label": "Alteração do estado mental", "pontos": 1},
+        {"name": "pas", "type": "boolean", "label": "PAS ≤ 100 mmHg", "pontos": 1}
+      ],
+      "formula": "Soma dos pontos (0-3)",
+      "criteria": [
+        "Triagem FORA da UTI",
+        "Usar com suspeita de infecção"
+      ],
+      "observations": [
+        "≥ 2: Alto risco de desfecho ruim",
+        "qSOFA ≥ 2 → Calcular SOFA completo",
+        "Não substitui critérios Sepsis-3 (SOFA ≥ 2)"
+      ],
+      "reference": "Singer M, et al. JAMA. 2016;315(8):801-10.",
+      "interpretation": {
+        "baixo": "0-1 - Risco baixo",
+        "alto": "≥ 2 - Calcular SOFA, considerar sepse"
+      }
+    },
+    "sofa": {
+      "name": "Escore SOFA (Disfunção Orgânica)",
+      "category": "Pneumologia",
+      "description": "Sequential Organ Failure Assessment",
+      "inputs": [
+        {"name": "pao2_fio2", "type": "select", "options": ["≥400", "300-399", "200-299 (VM)", "100-199 (VM)", "<100 (VM)"], "score": [0,1,2,3,4]},
+        {"name": "plaquetas", "type": "select", "options": ["≥150k", "100-149k", "50-99k", "20-49k", "<20k"], "score": [0,1,2,3,4]},
+        {"name": "bilirrubina", "type": "select", "options": ["<1.2", "1.2-1.9", "2.0-5.9", "6.0-11.9", "≥12"], "unit": "mg/dL", "score": [0,1,2,3,4]},
+        {"name": "pam_vasopressor", "type": "select", "options": ["PAM ≥70", "PAM <70", "Dopa ≤5 ou Dobuta", "Dopa >5 ou Nora ≤0.1", "Dopa >15 ou Nora >0.1"], "score": [0,1,2,3,4]},
+        {"name": "glasgow", "type": "select", "options": ["15", "13-14", "10-12", "6-9", "<6"], "score": [0,1,2,3,4]},
+        {"name": "creatinina", "type": "select", "options": ["<1.2", "1.2-1.9", "2.0-3.4", "3.5-4.9 ou <500mL/dia", "≥5.0 ou <200mL/dia"], "unit": "mg/dL", "score": [0,1,2,3,4]}
+      ],
+      "formula": "Soma dos pontos (0-24)",
+      "criteria": [
+        "Critério oficial de sepse: SOFA ≥ 2",
+        "Avaliar diariamente em UTI"
+      ],
+      "observations": [
+        "0-6: Baixa mortalidade",
+        "7-9: ~15% mortalidade",
+        "10-12: ~40%",
+        "13-14: ~50%",
+        "15-24: >80%",
+        "Aumento de 2+ pontos = sepse (se infecção)"
+      ],
+      "reference": "Vincent JL, et al. Intensive Care Med. 1996;22(7):707-10. Singer M, et al. JAMA. 2016;315(8):801-10.",
+      "interpretation": {
+        "baixo": "0-6 pontos",
+        "moderado": "7-9 pontos (~15% mortalidade)",
+        "alto": "10-12 pontos (~40% mortalidade)",
+        "muito_alto": "≥13 pontos (>50% mortalidade)"
+      }
+    },
+    "news2": {
+      "name": "NEWS 2 (Deterioração Clínica)",
+      "category": "Pneumologia",
+      "description": "National Early Warning Score 2",
+      "inputs": [
+        {"name": "fr", "type": "select", "options": ["≤8", "9-11", "12-20", "21-24", "≥25"], "score": [3,1,0,2,3]},
+        {"name": "spo2_escala1", "type": "select", "options": ["≤91", "92-93", "94-95", "≥96"], "score": [3,2,1,0], "label": "SpO2 (Escala 1 - sem hipercapnia)"},
+        {"name": "spo2_escala2", "type": "select", "options": ["≤83", "84-85", "86-87", "88-92", "93-94 em O2", "95-96 em O2", "≥97 em ar"], "score": [3,2,1,0,3,2,0], "label": "SpO2 (Escala 2 - DPOC hipercápnico)"},
+        {"name": "oxigenio", "type": "boolean", "label": "Uso de oxigênio suplementar", "pontos": 2},
+        {"name": "pas", "type": "select", "options": ["≤90", "91-100", "101-110", "111-219", "≥220"], "score": [3,2,1,0,3]},
+        {"name": "fc", "type": "select", "options": ["≤40", "41-50", "51-90", "91-110", "111-130", "≥131"], "score": [3,1,0,1,2,3]},
+        {"name": "consciencia", "type": "select", "options": ["Alerta", "Alterado (CVPU)"], "score": [0,3]},
+        {"name": "temperatura", "type": "select", "options": ["≤35.0", "35.1-36.0", "36.1-38.0", "38.1-39.0", "≥39.1"], "score": [3,1,0,1,2]}
+      ],
+      "formula": "Soma dos pontos",
+      "criteria": [
+        "Usar em enfermaria para detectar deterioração precoce",
+        "Escala 2 de SpO2 apenas em DPOC com hipercapnia documentada"
+      ],
+      "observations": [
+        "0-4: Baixo risco - Monitorar 4-6h",
+        "3 em qualquer parâmetro: Médio risco - Avisar médico",
+        "5-6: Médio-alto risco - Reavaliar urgente",
+        "≥7: Alto risco - Time de resposta rápida/UTI"
+      ],
+      "reference": "Royal College of Physicians. National Early Warning Score (NEWS) 2. 2017.",
+      "interpretation": {
+        "baixo": "0-4 - Monitorar rotina",
+        "medio": "5-6 ou 3 único - Reavaliar",
+        "alto": "≥7 - Time de emergência"
+      }
+    },
+    "heart": {
+      "name": "Escore HEART (Dor Torácica)",
+      "category": "Cardiologia",
+      "description": "Estratifica risco de SCA em dor torácica",
+      "inputs": [
+        {"name": "historia", "type": "select", "options": ["Pouco suspeito", "Moderadamente suspeito", "Altamente suspeito"], "score": [0,1,2]},
+        {"name": "ecg", "type": "select", "options": ["Normal", "Alterações inespecíficas", "Alterações significativas"], "score": [0,1,2]},
+        {"name": "idade", "type": "select", "options": ["<45", "45-64", "≥65"], "score": [0,1,2]},
+        {"name": "fatores_risco", "type": "select", "options": ["Nenhum", "1-2 fatores", "≥3 fatores ou DAC conhecida"], "label": "Fatores: HAS, tabagismo, DM, obesidade, dislipidemia, história familiar", "score": [0,1,2]},
+        {"name": "troponina", "type": "select", "options": ["Normal", "1-3x LSN", ">3x LSN"], "score": [0,1,2]}
+      ],
+      "formula": "Soma dos pontos (0-10)",
+      "criteria": [
+        "Aplicar em dor torácica aguda no PS",
+        "Requer troponina inicial"
+      ],
+      "observations": [
+        "0-3: Baixo risco (1.7% MACE em 6 sem) - Alta segura",
+        "4-6: Risco intermediário (17%) - Internação",
+        "7-10: Alto risco (50%+) - Cate urgente",
+        "HEART ≤ 3 + troponina 0/1h negativa = alta segura"
+      ],
+      "reference": "Six AJ, et al. Neth Heart J. 2008;16(6):191-6. Backus BE, et al. Int J Cardiol. 2013;168(3):2153-8.",
+      "interpretation": {
+        "baixo": "0-3 - Alta com troponina seriada",
+        "intermediario": "4-6 - Internação para investigação",
+        "alto": "7-10 - Cateterismo urgente"
+      }
+    },
+    "pam": {
+      "name": "Pressão Arterial Média (PAM)",
+      "category": "Cardiologia",
+      "description": "Calcula PAM a partir de PAS e PAD",
+      "inputs": [
+        {"name": "pas", "type": "number", "unit": "mmHg", "required": true, "label": "Pressão Arterial Sistólica"},
+        {"name": "pad", "type": "number", "unit": "mmHg", "required": true, "label": "Pressão Arterial Diastólica"}
+      ],
+      "formula": "PAM = PAD + (PAS - PAD)/3",
+      "formula_alternativa": "PAM = (2×PAD + PAS)/3",
+      "criteria": [
+        "Usado para avaliar perfusão tecidual",
+        "Meta em choque séptico: PAM ≥ 65 mmHg"
+      ],
+      "observations": [
+        "Normal: 70-100 mmHg",
+        "< 60 mmHg: Perfusão inadequada de órgãos vitais",
+        "PAM ≥ 65: Meta em sepse",
+        "PAM > 110: Hipertensão grave"
+      ],
+      "reference": "Intensive Care Med. 2017;43(3):304-377.",
+      "interpretation": {
+        "critica": "< 60 mmHg - Perfusão inadequada",
+        "baixa": "60-65 mmHg - Meta mínima em sepse",
+        "normal": "70-100 mmHg",
+        "alta": "> 110 mmHg"
+      },
+      "alerts": {
+        "critical": "< 60 mmHg - Risco de hipoperfusão tecidual"
+      }
+    },
+    "indice_choque": {
+      "name": "Índice de Choque",
+      "category": "Cardiologia",
+      "description": "FC/PAS - indica gravidade de choque",
+      "inputs": [
+        {"name": "fc", "type": "number", "unit": "bpm", "required": true},
+        {"name": "pas", "type": "number", "unit": "mmHg", "required": true}
+      ],
+      "formula": "Índice de Choque = FC / PAS",
+      "criteria": [
+        "Preditor de mortalidade em trauma, sepse, sangramento"
+      ],
+      "observations": [
+        "Normal: 0.5-0.7",
+        "0.7-0.9: Choque leve",
+        "0.9-1.2: Choque moderado",
+        "> 1.2: Choque grave",
+        "> 1.5: Mortalidade muito alta"
+      ],
+      "reference": "Rady MY, et al. Resuscitation. 1992;23(2):143-50.",
+      "interpretation": {
+        "normal": "0.5-0.7",
+        "leve": "0.7-0.9",
+        "moderado": "0.9-1.2",
+        "grave": "> 1.2"
+      },
+      "alerts": {
+        "critical": "> 1.2 - Choque grave, ressuscitação agressiva"
+      }
+    },
+    "pesi": {
+      "name": "PESI (TEP - Prognóstico)",
+      "category": "Emergência",
+      "description": "Pulmonary Embolism Severity Index",
+      "inputs": [
+        {"name": "idade", "type": "number", "unit": "anos", "required": true},
+        {"name": "sexo", "type": "select", "options": ["Masculino", "Feminino"], "required": true},
+        {"name": "cancer", "type": "boolean", "label": "Câncer", "pontos": 30},
+        {"name": "icc", "type": "boolean", "label": "Insuficiência cardíaca", "pontos": 10},
+        {"name": "dpoc", "type": "boolean", "label": "DPOC", "pontos": 10},
+        {"name": "fc", "type": "boolean", "label": "FC ≥ 110 bpm", "pontos": 20},
+        {"name": "pas", "type": "boolean", "label": "PAS < 100 mmHg", "pontos": 30},
+        {"name": "fr", "type": "boolean", "label": "FR ≥ 30 irpm", "pontos": 20},
+        {"name": "temp", "type": "boolean", "label": "Temperatura < 36°C", "pontos": 20},
+        {"name": "alteracao_mental", "type": "boolean", "label": "Alteração do estado mental", "pontos": 60},
+        {"name": "spo2", "type": "boolean", "label": "SpO2 < 90%", "pontos": 20}
+      ],
+      "formula": "Idade + pontos de comorbidades/sinais",
+      "criteria": [
+        "TEP confirmado",
+        "Versão simplificada: sPESI (0 = baixo risco)"
+      ],
+      "observations": [
+        "Classe I (≤65): Risco muito baixo (0-1.6% mortalidade 30d)",
+        "Classe II (66-85): Baixo (1.7-3.5%)",
+        "Classe III (86-105): Intermediário (3.2-7.1%)",
+        "Classe IV (106-125): Alto (4-11.4%)",
+        "Classe V (>125): Muito alto (10-24.5%)",
+        "Classe I-II: Candidato a alta/ambulatório"
+      ],
+      "reference": "Aujesky D, et al. Am J Respir Crit Care Med. 2005;172(8):1041-6.",
+      "interpretation": {
+        "muito_baixo": "≤65 - Considerar alta",
+        "baixo": "66-85 - Internação breve",
+        "alto": ">125 - Internação, monitorização"
+      }
+    },
+    "perc": {
+      "name": "Regra PERC (TEP)",
+      "category": "Emergência",
+      "description": "Pulmonary Embolism Rule-out Criteria",
+      "inputs": [
+        {"name": "idade", "type": "boolean", "label": "Idade ≥ 50 anos"},
+        {"name": "fc", "type": "boolean", "label": "FC ≥ 100 bpm"},
+        {"name": "spo2", "type": "boolean", "label": "SpO2 < 95%"},
+        {"name": "hemoptise", "type": "boolean", "label": "Hemoptise"},
+        {"name": "estrogeno", "type": "boolean", "label": "Uso de estrógeno"},
+        {"name": "cirurgia_trauma", "type": "boolean", "label": "Cirurgia ou trauma com anestesia geral nas últimas 4 semanas"},
+        {"name": "tep_tvp_previo", "type": "boolean", "label": "TEP ou TVP prévio"},
+        {"name": "edema_unilateral", "type": "boolean", "label": "Edema unilateral de MMII"}
+      ],
+      "formula": "TODOS devem ser NÃO",
+      "criteria": [
+        "Aplicar apenas se suspeita clínica baixa (<15%)",
+        "Se todos NÃO → Exclui TEP (não fazer D-dímero/TC)"
+      ],
+      "observations": [
+        "VPN 99.6% quando todos critérios negativos",
+        "Reduz investigação desnecessária",
+        "Se qualquer SIM → Prosseguir com Wells + D-dímero"
+      ],
+      "reference": "Kline JA, et al. J Thromb Haemost. 2004;2(8):1247-55.",
+      "interpretation": {
+        "negativo": "Todos NÃO - TEP excluído, alta sem exames",
+        "positivo": "Qualquer SIM - Seguir com Wells/D-dímero"
+      }
+    },
+    "alvarado": {
+      "name": "Escore de Alvarado (Apendicite)",
+      "category": "Gastroenterologia",
+      "description": "Prediz probabilidade de apendicite aguda",
+      "inputs": [
+        {"name": "migracao_dor", "type": "boolean", "label": "Migração da dor para FID", "pontos": 1},
+        {"name": "anorexia", "type": "boolean", "label": "Anorexia", "pontos": 1},
+        {"name": "nausea_vomito", "type": "boolean", "label": "Náusea/Vômito", "pontos": 1},
+        {"name": "dor_fid", "type": "boolean", "label": "Dor em FID", "pontos": 2},
+        {"name": "descompressao", "type": "boolean", "label": "Dor à descompressão", "pontos": 1},
+        {"name": "temperatura", "type": "boolean", "label": "Temperatura ≥ 37.3°C", "pontos": 1},
+        {"name": "leucocitose", "type": "boolean", "label": "Leucócitos > 10.000", "pontos": 2},
+        {"name": "desvio", "type": "boolean", "label": "Desvio à esquerda (>75% neutrófilos)", "pontos": 1}
+      ],
+      "formula": "Soma dos pontos (0-10)",
+      "criteria": [
+        "Suspeita clínica de apendicite aguda"
+      ],
+      "observations": [
+        "1-4: Baixa probabilidade - TC/US ou observação",
+        "5-6: Provável - TC recomendada",
+        "7-10: Alta probabilidade - Cirurgia",
+        "Sensibilidade ~80%, especificidade ~75%"
+      ],
+      "reference": "Alvarado A. Ann Emerg Med. 1986;15(5):557-64.",
+      "interpretation": {
+        "baixo": "1-4 - Exames de imagem ou observação",
+        "intermediario": "5-6 - TC indicada",
+        "alto": "7-10 - Cirurgia indicada"
+      }
+    },
+    "air": {
+      "name": "Escore AIR (Apendicite)",
+      "category": "Gastroenterologia",
+      "description": "Appendicitis Inflammatory Response Score",
+      "inputs": [
+        {"name": "vomito", "type": "boolean", "label": "Vômito", "pontos": 1},
+        {"name": "dor_fid", "type": "select", "options": ["Leve", "Moderada", "Grave"], "score": [1,2,3]},
+        {"name": "descompressao", "type": "select", "options": ["Leve", "Moderada", "Grave"], "score": [1,2,3]},
+        {"name": "temperatura", "type": "boolean", "label": "Temperatura ≥ 38.5°C", "pontos": 1},
+        {"name": "leucocitos", "type": "select", "options": ["10-14.9k", "≥15k"], "score": [1,2]},
+        {"name": "neutrofilos", "type": "select", "options": ["70-84%", "≥85%"], "score": [1,2]},
+        {"name": "pcr", "type": "select", "options": ["10-49 mg/L", "≥50 mg/L"], "score": [1,2]}
+      ],
+      "formula": "Soma dos pontos (0-12)",
+      "criteria": [
+        "Mais preciso que Alvarado em alguns estudos",
+        "Inclui PCR"
+      ],
+      "observations": [
+        "0-4: Baixo risco (5% apendicite) - Observação/alta",
+        "5-8: Risco intermediário (50%) - TC/US",
+        "9-12: Alto risco (90%) - Cirurgia"
+      ],
+      "reference": "Andersson M, Andersson RE. World J Surg. 2008;32(8):1843-9.",
+      "interpretation": {
+        "baixo": "0-4 - Observação ou alta",
+        "intermediario": "5-8 - Imagem",
+        "alto": "9-12 - Cirurgia"
+      }
+    },
+    "rockall": {
+      "name": "Escore de Rockall (HDA)",
+      "category": "Gastroenterologia",
+      "description": "Prediz mortalidade em hemorragia digestiva alta",
+      "inputs": [
+        {"name": "idade", "type": "select", "options": ["<60", "60-79", "≥80"], "score": [0,1,2]},
+        {"name": "choque", "type": "select", "options": ["Sem choque (PAS≥100, FC<100)", "Taquicardia (FC≥100)", "Hipotensão (PAS<100)"], "score": [0,1,2]},
+        {"name": "comorbidades", "type": "select", "options": ["Nenhuma", "ICC/DAC/comorbidade maior", "Insuficiência renal/hepática/câncer disseminado"], "score": [0,2,3]},
+        {"name": "diagnostico_eda", "type": "select", "options": ["Mallory-Weiss/sem lesão", "Outras", "Malignidade GI"], "score": [0,1,2]},
+        {"name": "sangramento_eda", "type": "select", "options": ["Nenhum/mancha escura", "Sangue em TGI/coágulo/vaso visível"], "score": [0,2]}
+      ],
+      "formula": "Soma dos pontos (0-11)",
+      "criteria": [
+        "Score pré-EDA (idade + choque + comorbidades) guia urgência da EDA",
+        "Score completo (pós-EDA) prediz mortalidade"
+      ],
+      "observations": [
+        "Pré-EDA 0: Risco muito baixo - EDA eletiva",
+        "Pré-EDA ≥3: Alto risco - EDA urgente",
+        "Completo ≥5: Mortalidade 10-25%",
+        "Completo ≥8: Mortalidade >40%"
+      ],
+      "reference": "Rockall TA, et al. Gut. 1996;38(3):316-21.",
+      "interpretation": {
+        "baixo": "0-2 - Mortalidade <1%",
+        "intermediario": "3-5 - Mortalidade ~5-10%",
+        "alto": "≥6 - Mortalidade >10%"
+      }
+    },
+    "glasgow_blatchford": {
+      "name": "Escore de Glasgow-Blatchford (HDA)",
+      "category": "Gastroenterologia",
+      "description": "Identifica HDA de baixo risco para alta precoce",
+      "inputs": [
+        {"name": "ureia", "type": "select", "options": ["<6.5", "6.5-7.9", "8.0-9.9", "10-24.9", "≥25"], "unit": "mmol/L", "score": [0,2,3,4,6]},
+        {"name": "hb_masc", "type": "select", "options": ["≥13", "12-12.9", "10-11.9", "<10"], "unit": "g/dL (masculino)", "score": [0,1,3,6]},
+        {"name": "hb_fem", "type": "select", "options": ["≥12", "10-11.9", "<10"], "unit": "g/dL (feminino)", "score": [0,1,6]},
+        {"name": "pas", "type": "select", "options": ["≥110", "100-109", "90-99", "<90"], "unit": "mmHg", "score": [0,1,2,3]},
+        {"name": "fc", "type": "boolean", "label": "FC ≥ 100 bpm", "pontos": 1},
+        {"name": "melena", "type": "boolean", "label": "Melena", "pontos": 1},
+        {"name": "sincope", "type": "boolean", "label": "Síncope", "pontos": 2},
+        {"name": "hepatopatia", "type": "boolean", "label": "Hepatopatia", "pontos": 2},
+        {"name": "icc", "type": "boolean", "label": "Insuficiência cardíaca", "pontos": 2}
+      ],
+      "formula": "Soma dos pontos (0-23)",
+      "criteria": [
+        "Vantagem: não requer EDA, apenas dados iniciais",
+        "Score 0 = alta segura"
+      ],
+      "observations": [
+        "0: Risco muito baixo (0.5% necessidade de intervenção) - ALTA SEGURA",
+        "1: Ainda baixo risco",
+        "≥2: Risco aumentado - Internação",
+        "≥6: Alto risco - EDA urgente"
+      ],
+      "reference": "Blatchford O, et al. Lancet. 2000;356(9238):1318-21.",
+      "interpretation": {
+        "alta_segura": "0 - Alta ambulatorial com seguimento",
+        "baixo": "1-2 - Observação breve",
+        "alto": "≥6 - Internação, EDA urgente"
+      }
+    },
+    "genebra": {
+      "name": "Escore de Genebra Revisado (TEP)",
+      "category": "Emergência",
+      "description": "Estratifica probabilidade de TEP",
+      "inputs": [
+        {"name": "idade", "type": "boolean", "label": "Idade > 65 anos", "pontos": 1},
+        {"name": "tep_tvp_previo", "type": "boolean", "label": "TEP ou TVP prévio", "pontos": 3},
+        {"name": "cirurgia", "type": "boolean", "label": "Cirurgia ou fratura no último mês", "pontos": 2},
+        {"name": "cancer", "type": "boolean", "label": "Câncer ativo", "pontos": 2},
+        {"name": "dor_mmii", "type": "boolean", "label": "Dor unilateral em MMII", "pontos": 3},
+        {"name": "hemoptise", "type": "boolean", "label": "Hemoptise", "pontos": 2},
+        {"name": "fc", "type": "select", "options": ["<75", "75-94", "≥95"], "score": [0,3,5]},
+        {"name": "dor_palpacao", "type": "boolean", "label": "Dor à palpação de veia profunda e edema unilateral", "pontos": 4}
+      ],
+      "formula": "Soma dos pontos (0-22)",
+      "criteria": [
+        "Alternativa ao Wells",
+        "Menos subjetivo (não tem \"TEP mais provável\")"
+      ],
+      "observations": [
+        "0-3: Baixa probabilidade (10%)",
+        "4-10: Probabilidade intermediária (30%)",
+        "≥11: Alta probabilidade (65%)",
+        "Combinar com D-dímero se baixa probabilidade"
+      ],
+      "reference": "Le Gal G, et al. Ann Intern Med. 2006;144(3):165-71.",
+      "interpretation": {
+        "baixo": "0-3 - D-dímero (se negativo, exclui TEP)",
+        "intermediario": "4-10 - TC indicada",
+        "alto": "≥11 - TC urgente"
+      }
+    },
+    "risco_genebra_tev": {
+      "name": "Risco de Genebra para TEV",
+      "category": "Emergência",
+      "description": "Avalia risco de tromboembolismo venoso",
+      "inputs": [
+        {"name": "cirurgia", "type": "boolean", "label": "Cirurgia recente", "pontos": 2},
+        {"name": "tev_previo", "type": "boolean", "label": "TEV prévio", "pontos": 3},
+        {"name": "imobilizacao", "type": "boolean", "label": "Imobilização > 3 dias", "pontos": 1},
+        {"name": "idade", "type": "boolean", "label": "Idade > 60 anos", "pontos": 1},
+        {"name": "cancer", "type": "boolean", "label": "Câncer ativo", "pontos": 2}
+      ],
+      "formula": "Soma dos pontos",
+      "observations": [
+        "Guia profilaxia de TEV em hospitalizados"
+      ],
+      "reference": "Caprini JA. Dis Mon. 2005;51(2-3):70-8."
+    },
+    "sincope_canadense": {
+      "name": "Regra Canadense de Síncope",
+      "category": "Emergência",
+      "description": "Identifica pacientes de alto risco após síncope",
+      "inputs": [
+        {"name": "criterio_clinico", "type": "boolean", "label": "Predisposição a arritmia ventricular"},
+        {"name": "ecg_anormal", "type": "boolean", "label": "ECG anormal (não sinusal ou nova alteração)"},
+        {"name": "palpitacao_pre", "type": "boolean", "label": "Palpitação antes da síncope"},
+        {"name": "troponina_elevada", "type": "boolean", "label": "Troponina elevada"},
+        {"name": "pas_baixa", "type": "boolean", "label": "PAS ≤ 90 mmHg na chegada ou PS"},
+        {"name": "spo2_baixo", "type": "boolean", "label": "SpO2 ≤ 94% na chegada ou PS"},
+        {"name": "hda", "type": "boolean", "label": "Hemorragia digestiva evidente"}
+      ],
+      "formula": "Qualquer critério = Alto risco",
+      "criteria": [
+        "Síncope (perda de consciência transitória com recuperação completa)",
+        "Excluir: convulsão, TCE, hipoglicemia"
+      ],
+      "observations": [
+        "Se TODOS NÃO → Baixo risco (0.4% eventos graves em 30 dias)",
+        "Se QUALQUER SIM → Alto risco - Internação/monitorização",
+        "VPN 99.6%"
+      ],
+      "reference": "Thiruganasambandamoorthy V, et al. CMAJ. 2016;188(12):E289-98.",
+      "interpretation": {
+        "baixo": "Todos NÃO - Alta segura",
+        "alto": "Qualquer SIM - Internação"
+      }
+    },
+    "centor": {
+      "name": "Critérios de Centor (Faringite)",
+      "category": "Emergência",
+      "description": "Prediz faringite estreptocócica",
+      "inputs": [
+        {"name": "exsudato", "type": "boolean", "label": "Exsudato tonsilar", "pontos": 1},
+        {"name": "adenopatia", "type": "boolean", "label": "Adenopatia cervical dolorosa", "pontos": 1},
+        {"name": "febre", "type": "boolean", "label": "Febre > 38°C", "pontos": 1},
+        {"name": "tosse", "type": "boolean", "label": "Ausência de tosse", "pontos": 1}
+      ],
+      "formula": "Soma dos pontos (0-4)",
+      "criteria": [
+        "Adultos e crianças > 3 anos com faringite",
+        "Modificado (McIsaac): adiciona idade"
+      ],
+      "observations": [
+        "0-1: 1-5% estrepto - Não tratar",
+        "2-3: 10-20% - Teste rápido ou cultura",
+        "4: 50% - Considerar ATB empírico",
+        "McIsaac: subtrai 1 se idade >45, adiciona 1 se 3-14 anos"
+      ],
+      "reference": "Centor RM, et al. Med Decis Making. 1981;1(3):239-46. McIsaac WJ, et al. JAMA. 2004;291(13):1587-95.",
+      "interpretation": {
+        "baixo": "0-1 - Não tratar",
+        "intermediario": "2-3 - Teste rápido",
+        "alto": "4 - ATB empírico"
+      }
+    },
+    "feverpain": {
+      "name": "FeverPAIN (Faringite)",
+      "category": "Emergência",
+      "description": "Escore alternativo para faringite estreptocócica",
+      "inputs": [
+        {"name": "febre", "type": "boolean", "label": "Febre nas últimas 24h", "pontos": 1},
+        {"name": "exsudato", "type": "boolean", "label": "Exsudato purulento", "pontos": 1},
+        {"name": "inicio_rapido", "type": "boolean", "label": "Sintomas em ≤ 3 dias", "pontos": 1},
+        {"name": "tonsilas_inflamadas", "type": "boolean", "label": "Tonsilas gravemente inflamadas", "pontos": 1},
+        {"name": "sem_tosse", "type": "boolean", "label": "Sem tosse ou coriza", "pontos": 1}
+      ],
+      "formula": "Soma dos pontos (0-5)",
+      "observations": [
+        "0-1: 13-18% estrepto - Não tratar",
+        "2-3: ~35% - Prescrição adiada",
+        "4-5: 62-65% - ATB imediato ou teste rápido"
+      ],
+      "reference": "Little P, et al. BMJ. 2013;347:f5806."
+    },
+    "2helps2b": {
+      "name": "2HELPS2B (HEMATOMA INTRACEREBRAL)",
+      "category": "Emergência",
+      "description": "Prediz crescimento de hematoma intracerebral",
+      "inputs": [
+        {"name": "hematoma_volume", "type": "boolean", "label": "Volume ≥ 10 mL", "pontos": 1},
+        {"name": "expansao_precoce", "type": "boolean", "label": "Expansão precoce documentada", "pontos": 1},
+        {"name": "local_lobular", "type": "boolean", "label": "Localização lobular", "pontos": 1},
+        {"name": "tempo_sintomas", "type": "boolean", "label": "Tempo desde sintomas ≤ 6h", "pontos": 1},
+        {"name": "spot_sign", "type": "boolean", "label": "Spot sign na TC", "pontos": 2},
+        {"name": "anticoagulacao", "type": "boolean", "label": "Anticoagulação prévia", "pontos": 2},
+        {"name": "pa_elevada", "type": "boolean", "label": "PAS ≥ 180 mmHg", "pontos": 1},
+        {"name": "bas_elevado", "type": "boolean", "label": "Glicemia ≥ 200 mg/dL", "pontos": 1}
+      ],
+      "formula": "Soma dos pontos (0-9)",
+      "observations": [
+        "0-1: 5% risco de expansão",
+        "2-3: 15%",
+        "4-5: 30%",
+        "≥6: >50%"
+      ],
+      "reference": "Morotti A, et al. Stroke. 2018;49(10):2420-6."
+    },
+    "edacs": {
+      "name": "EDACS (Dor Torácica)",
+      "category": "Emergência",
+      "description": "Emergency Department Assessment of Chest Pain Score",
+      "inputs": [
+        {"name": "idade", "type": "select", "options": ["<50", "50-54", "55-59", "60-64", "65-69", "70-74", "75-79", "≥80"], "score": [0,4,8,12,16,20,24,28]},
+        {"name": "sexo", "type": "select", "options": ["Feminino", "Masculino"], "score": [0,6]},
+        {"name": "fatores_risco", "type": "boolean", "label": "≥3 fatores de risco ou DAC conhecida", "pontos": 4},
+        {"name": "sintomas_dispneia", "type": "boolean", "label": "Sintomas incluem dispneia", "pontos": 3},
+        {"name": "sintomas_diaforese", "type": "boolean", "label": "Sintomas incluem diaforese", "pontos": 3},
+        {"name": "sintomas_irradiacao", "type": "boolean", "label": "Dor irradia para braço/ombro", "pontos": 5},
+        {"name": "dor_palpacao", "type": "boolean", "label": "Dor reproduzida à palpação", "pontos": -4},
+        {"name": "ecg_normal", "type": "boolean", "label": "ECG normal", "pontos": -6},
+        {"name": "isquemia_nova", "type": "boolean", "label": "Isquemia nova ou provável no ECG", "pontos": 0}
+      ],
+      "formula": "Soma dos pontos",
+      "criteria": [
+        "Combinar score < 16 + ECG normal + troponina 0/2h negativa = Alta segura"
+      ],
+      "observations": [
+        "< 16 + ECG normal + trop neg: 0.3% MACE em 30d",
+        "Sensibilidade > 99% quando combinado com troponinas seriadas"
+      ],
+      "reference": "Than M, et al. JAMA Intern Med. 2014;174(1):51-8.",
+      "interpretation": {
+        "baixo": "< 16 + ECG normal + trop 0/2h neg - Alta segura",
+        "alto": "≥ 16 ou ECG anormal - Internação"
+      }
+    },
+    "dissecacao_aortica": {
+      "name": "Escore de Dissecção Aórtica",
+      "category": "Emergência",
+      "description": "ADD-RS (Aortic Dissection Detection Risk Score)",
+      "inputs": [
+        {"name": "fatores_predisponentes", "type": "boolean", "label": "Fatores predisponentes (síndrome de Marfan, história familiar, válvula aórtica bicúspide, aneurisma aórtico conhecido)", "pontos": 1},
+        {"name": "dor_caracteristica", "type": "boolean", "label": "Dor característica (início súbito, dor intensa, qualidade rasgante/dilacerante)", "pontos": 1},
+        {"name": "exame_fisico", "type": "boolean", "label": "Achados ao exame (déficit de pulso, diferença de PA >20mmHg, sopro de insuficiência aórtica, déficit neurológico focal)", "pontos": 1}
+      ],
+      "formula": "Soma dos pontos (0-3)",
+      "criteria": [
+        "Suspeita clínica de dissecção aórtica"
+      ],
+      "observations": [
+        "0: Baixo risco (<2%) - D-dímero < 500 ng/mL exclui",
+        "1: Moderado (6%) - Imagem indicada",
+        "2-3: Alto risco (80-90%) - Angio-TC urgente"
+      ],
+      "reference": "Rogers AM, et al. Circulation. 2011;123(20):2213-8.",
+      "interpretation": {
+        "baixo": "0 - D-dímero pode excluir",
+        "alto": "≥1 - Angio-TC indicada"
+      }
+    },
+    "nexus_cranio": {
+      "name": "NEXUS Crânio (TC em Trauma)",
+      "category": "Neurologia",
+      "description": "Critérios para indicar TC de crânio em trauma",
+      "inputs": [
+        {"name": "deficit_focal", "type": "boolean", "label": "Déficit neurológico focal"},
+        {"name": "sinais_fratura_base", "type": "boolean", "label": "Sinais de fratura de base de crânio"},
+        {"name": "vomitos", "type": "boolean", "label": "Vômitos (≥2 episódios)"},
+        {"name": "idade", "type": "boolean", "label": "Idade ≥ 65 anos"},
+        {"name": "coagulopatia", "type": "boolean", "label": "Coagulopatia"},
+        {"name": "alteracao_nivel", "type": "boolean", "label": "Alteração do nível de consciência"},
+        {"name": "amnesia", "type": "boolean", "label": "Amnésia anterógrada (perda de memória após o trauma)"}
+      ],
+      "formula": "Qualquer critério = TC indicada",
+      "criteria": [
+        "Trauma craniano com Glasgow 15"
+      ],
+      "observations": [
+        "Se TODOS NÃO → TC não necessária (sensibilidade 99%)",
+        "Se QUALQUER SIM → TC indicada"
+      ],
+      "reference": "Mower WR, et al. J Trauma. 2005;59(4):954-9."
+    },
+    "nexus_coluna": {
+      "name": "NEXUS Coluna Cervical",
+      "category": "Neurologia",
+      "description": "Critérios para dispensar RX de coluna cervical",
+      "inputs": [
+        {"name": "dor_linha_media", "type": "boolean", "label": "Dor à palpação da linha média cervical"},
+        {"name": "deficit_focal", "type": "boolean", "label": "Déficit neurológico focal"},
+        {"name": "alteracao_consciencia", "type": "boolean", "label": "Alteração do nível de consciência"},
+        {"name": "intoxicacao", "type": "boolean", "label": "Intoxicação"},
+        {"name": "lesao_distrativa", "type": "boolean", "label": "Lesão distrativa dolorosa"}
+      ],
+      "formula": "TODOS devem ser NÃO",
+      "criteria": [
+        "Trauma com mecanismo potencial de lesão cervical"
+      ],
+      "observations": [
+        "Se TODOS NÃO → Dispensar imagem (sensibilidade 99.6%)",
+        "Se QUALQUER SIM → RX ou TC cervical indicada"
+      ],
+      "reference": "Hoffman JR, et al. N Engl J Med. 2000;343(2):94-9.",
+      "interpretation": {
+        "dispensar": "Todos NÃO - Imagem desnecessária",
+        "indicar": "Qualquer SIM - RX/TC necessária"
+      }
+    },
+    "nexus_torax": {
+      "name": "NEXUS Tórax (RX em Trauma)",
+      "category": "Emergência",
+      "description": "Identifica trauma torácico sem necessidade de RX",
+      "inputs": [
+        {"name": "idade", "type": "boolean", "label": "Idade > 60 anos"},
+        {"name": "mecanismo_rapido", "type": "boolean", "label": "Mecanismo de desaceleração rápida"},
+        {"name": "dor_torax", "type": "boolean", "label": "Dor torácica"},
+        {"name": "intoxicacao", "type": "boolean", "label": "Intoxicação"},
+        {"name": "alteracao_mental", "type": "boolean", "label": "Alteração do estado mental"},
+        {"name": "dor_palpacao", "type": "boolean", "label": "Dor à palpação de tórax"},
+        {"name": "lesao_distrativa", "type": "boolean", "label": "Lesão distrativa"}
+      ],
+      "formula": "TODOS devem ser NÃO",
+      "observations": [
+        "Se TODOS NÃO → RX não necessário (VPN 98.8%)",
+        "Se QUALQUER SIM → RX de tórax indicado"
+      ],
+      "reference": "Rodriguez RM, et al. Ann Emerg Med. 2013;61(1):15-21."
+    },
+    "peso_corporal_ideal": {
+      "name": "Peso Corporal Ideal (PCI)",
+      "category": "Calculadoras Gerais",
+      "description": "Calcula peso ideal para ajuste de doses",
+      "inputs": [
+        {"name": "altura", "type": "number", "unit": "cm", "required": true},
+        {"name": "sexo", "type": "select", "options": ["Masculino", "Feminino"], "required": true}
+      ],
+      "formula_masc": "PCI = 50 + 0.91 × (Altura - 152.4)",
+      "formula_fem": "PCI = 45.5 + 0.91 × (Altura - 152.4)",
+      "criteria": [
+        "Usado para cálculo de ventilação mecânica",
+        "Ajuste de doses de aminoglicosídeos"
+      ],
+      "observations": [
+        "Altura em cm deve ser convertida (152.4 cm = 5 pés)",
+        "Fórmula de Devine"
+      ],
+      "reference": "Devine BJ. Drug Intell Clin Pharm. 1974;8:650-5."
+    },
+    "ottawa_hsa": {
+      "name": "Regra de Ottawa para HSA",
+      "category": "Neurologia",
+      "description": "Identifica cefaleia de baixo risco para hemorragia subaracnoidea",
+      "inputs": [
+        {"name": "idade", "type": "boolean", "label": "Idade ≥ 40 anos"},
+        {"name": "rigidez_nuca", "type": "boolean", "label": "Rigidez de nuca"},
+        {"name": "perda_consciencia", "type": "boolean", "label": "Perda de consciência testemunhada"},
+        {"name": "inicio_durante_esforço", "type": "boolean", "label": "Início durante esforço físico"},
+        {"name": "cefaleia_thunderclap", "type": "boolean", "label": "Cefaleia de início súbito (thunderclap - pico em <1 min)"},
+        {"name": "limitacao_flexao", "type": "boolean", "label": "Limitação da flexão cervical na avaliação"}
+      ],
+      "formula": "Qualquer critério = Investigar HSA",
+      "criteria": [
+        "Cefaleia não-traumática de início agudo",
+        "Cefaleia com pico em 1 hora",
+        "Sem déficit neurológico focal"
+      ],
+      "observations": [
+        "Se TODOS NÃO → HSA improvável (VPN 100%)",
+        "Se QUALQUER SIM → TC + Punção lombar se TC negativa",
+        "Sensibilidade 100%, especificidade 15%"
+      ],
+      "reference": "Perry JJ, et al. JAMA. 2013;310(12):1248-55.",
+      "interpretation": {
+        "baixo": "Todos NÃO - HSA muito improvável",
+        "alto": "Qualquer SIM - Investigar com TC + PL"
+      }
+    },
+    "regra_canadense_tc": {
+      "name": "Regra Canadense de TC de Crânio",
+      "category": "Neurologia",
+      "description": "Indica necessidade de TC em trauma craniano leve",
+      "inputs": [
+        {"name": "alto_risco_glasgow", "type": "boolean", "label": "Glasgow < 15 após 2h"},
+        {"name": "alto_risco_fratura_base", "type": "boolean", "label": "Suspeita de fratura de base de crânio"},
+        {"name": "alto_risco_vomitos", "type": "boolean", "label": "≥ 2 episódios de vômito"},
+        {"name": "alto_risco_idade", "type": "boolean", "label": "Idade ≥ 65 anos"},
+        {"name": "medio_risco_amnesia", "type": "boolean", "label": "Amnésia ≥ 30 min antes do impacto"},
+        {"name": "medio_risco_mecanismo", "type": "boolean", "label": "Mecanismo perigoso (pedestre atropelado, ejeção de veículo, queda > 1m)"}
+      ],
+      "formula": "Alto risco = TC urgente; Médio risco = considerar TC",
+      "criteria": [
+        "TCE leve (Glasgow 13-15)",
+        "Perda de consciência, amnésia ou desorientação"
+      ],
+      "observations": [
+        "Alto risco: lesão neurocirúrgica 50-80%",
+        "Médio risco: lesão cerebral 5-10%",
+        "Sem critérios: Lesão cerebral < 1%"
+      ],
+      "reference": "Stiell IG, et al. CMAJ. 2001;165(9):1203-9.",
+      "interpretation": {
+        "alto": "Qualquer alto risco - TC urgente",
+        "medio": "Médio risco (sem alto) - Considerar TC",
+        "baixo": "Sem critérios - TC desnecessária"
+      }
+    },
+    "macocha": {
+      "name": "MACOCHA (Intubação Difícil em UTI)",
+      "category": "UTI",
+      "description": "Prediz intubação difícil em UTI",
+      "inputs": [
+        {"name": "mallampati", "type": "boolean", "label": "Mallampati III ou IV", "pontos": 5},
+        {"name": "apneia_obstrutiva", "type": "boolean", "label": "Apneia obstrutiva do sono", "pontos": 2},
+        {"name": "limitacao_cervical", "type": "boolean", "label": "Limitação da mobilidade cervical", "pontos": 1},
+        {"name": "abertura_bucal", "type": "boolean", "label": "Abertura bucal < 3 cm", "pontos": 1},
+        {"name": "coma", "type": "boolean", "label": "Coma", "pontos": 1},
+        {"name": "hipoxemia_grave", "type": "boolean", "label": "Hipoxemia grave (SpO2 < 80%)", "pontos": 1},
+        {"name": "obeso", "type": "boolean", "label": "Obesidade (IMC ≥ 35)", "pontos": 1}
+      ],
+      "formula": "Soma dos pontos (0-12)",
+      "criteria": [
+        "Prediz dificuldade de laringoscopia em UTI"
+      ],
+      "observations": [
+        "≥ 3: Alto risco de intubação difícil",
+        "Sensibilidade 73%, especificidade 89%",
+        "Preparar via aérea cirúrgica se ≥ 3"
+      ],
+      "reference": "De Jong A, et al. Br J Anaesth. 2013;110(4):629-36.",
+      "interpretation": {
+        "baixo": "0-2 - Risco baixo",
+        "alto": "≥ 3 - Alto risco, preparar plano B/C"
+      }
+    },
+    "4at": {
+      "name": "4AT (Delirium e Comprometimento Cognitivo)",
+      "category": "Neurologia",
+      "description": "Triagem rápida de delirium",
+      "inputs": [
+        {"name": "alerta", "type": "select", "options": ["Normal (totalmente alerta)", "Leve sonolência por <10s após acordar", "Claramente anormal"], "score": [0,0,4]},
+        {"name": "amt4", "type": "select", "options": ["Sem erros", "1 erro", "2+ erros ou não testável"], "label": "AMT4 (idade, data nasc, local, ano atual)", "score": [0,1,2]},
+        {"name": "atencao", "type": "select", "options": ["Completa 7 meses corretamente", "1 erro", "2+ erros ou não testável"], "label": "Meses do ano de trás pra frente", "score": [0,1,2]},
+        {"name": "mudanca_aguda", "type": "boolean", "label": "Mudança aguda ou flutuação de comportamento/cognição", "pontos": 4}
+      ],
+      "formula": "Soma dos pontos (0-12)",
+      "criteria": [
+        "Aplicar em pacientes > 65 anos ou com risco de delirium"
+      ],
+      "observations": [
+        "0: Delirium ou comprometimento cognitivo grave improvável",
+        "1-3: Possível comprometimento cognitivo",
+        "4+: Possível delirium ± comprometimento cognitivo",
+        "Rápido (< 2 minutos)"
+      ],
+      "reference": "Bellelli G, et al. Age Ageing. 2014;43(4):496-502.",
+      "interpretation": {
+        "normal": "0 - Improvável delirium",
+        "possivel_cognitivo": "1-3 - Comprometimento cognitivo possível",
+        "delirium": "≥ 4 - Delirium provável"
+      }
+    },
+    "6mwt": {
+      "name": "Teste de Caminhada de 6 Minutos (6MWT)",
+      "category": "Pneumologia",
+      "description": "Avalia capacidade funcional",
+      "inputs": [
+        {"name": "distancia", "type": "number", "unit": "metros", "required": true, "label": "Distância percorrida em 6 minutos"},
+        {"name": "idade", "type": "number", "unit": "anos", "required": true},
+        {"name": "altura", "type": "number", "unit": "cm", "required": true},
+        {"name": "peso", "type": "number", "unit": "kg", "required": true},
+        {"name": "sexo", "type": "select", "options": ["Masculino", "Feminino"], "required": true}
+      ],
+      "formula_previsto_masc": "Distância prevista (H) = (7.57 × altura cm) - (5.02 × idade) - (1.76 × peso kg) - 309",
+      "formula_previsto_fem": "Distância prevista (M) = (2.11 × altura cm) - (5.78 × idade) - (2.29 × peso kg) + 667",
+      "criteria": [
+        "Avaliar capacidade funcional em DPOC, IC, hipertensão pulmonar",
+        "Progn óstico em IC e pneumopatias"
+      ],
+      "observations": [
+        "< 300m: Pior prognóstico em IC e DPOC",
+        "Queda de SpO2 > 4%: Considerar O2 domiciliar",
+        "% do previsto: < 80% = comprometimento",
+        "Escala de Borg para dispneia ao final"
+      ],
+      "reference": "Enright PL, Sherrill DL. Respir Care. 1998;43(9):783-5. ATS Statement. Am J Respir Crit Care Med. 2002;166(1):111-7.",
+      "interpretation": {
+        "grave": "< 300m - Alto risco",
+        "moderado": "300-450m",
+        "normal": "> 450m"
+      }
+    },
+    "mortalidade_endarterectomia": {
+      "name": "Escore de Mortalidade em Endarterectomia Carotídea",
+      "category": "Cardiologia",
+      "description": "Prediz mortalidade perioperatória",
+      "inputs": [
+        {"name": "idade", "type": "select", "options": ["< 70", "70-79", "≥ 80"], "score": [0,1,2]},
+        {"name": "sexo_feminino", "type": "boolean", "label": "Sexo feminino", "pontos": 1},
+        {"name": "sintomatico", "type": "boolean", "label": "Sintomático (TIA/AVC < 6 meses)", "pontos": 1},
+        {"name": "dac", "type": "boolean", "label": "Doença arterial coronariana", "pontos": 1},
+        {"name": "icc", "type": "boolean", "label": "Insuficiência cardíaca", "pontos": 1},
+        {"name": "dpoc", "type": "boolean", "label": "DPOC", "pontos": 1},
+        {"name": "creatinina", "type": "boolean", "label": "Creatinina > 1.5 mg/dL", "pontos": 1}
+      ],
+      "formula": "Soma dos pontos",
+      "observations": [
+        "Ajuda na decisão entre endarterectomia vs stent carotídeo",
+        "Alto risco: considerar stent"
+      ],
+      "reference": "Chiam PTL, et al. Stroke. 2011;42(12):3403-8."
+    }
+  }
+}

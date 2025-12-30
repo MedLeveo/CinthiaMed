@@ -1,0 +1,234 @@
+{
+  "meta_info": {
+    "version": "1.0",
+    "description": "Banco de dados estruturado para Sistema de Apoio à Decisão Clínica (CDSS).",
+    "language": "pt-BR"
+  },
+  "system_config": {
+    "global_disclaimer": "ATENÇÃO: Esta ferramenta é um auxílio ao cálculo e não substitui o julgamento clínico profissional. Valores devem ser corroborados com o quadro clínico.",
+    "interaction_rules": [
+      {
+        "rule": "unit_validation",
+        "instruction": "Sempre confirme a unidade de medida antes de calcular. Converta internamente para a unidade padrão da fórmula.",
+        "example": "O peso está em kg ou lbs? A creatinina é mg/dL ou mmol/L?"
+      },
+      {
+        "rule": "safety_limits",
+        "instruction": "Se o input ou output estiver fora dos limites fisiológicos compatíveis com a vida, emita um 'HARD WARNING'.",
+        "thresholds": {
+          "weight_min_kg": 0.3,
+          "weight_max_kg": 600,
+          "hr_max": 300,
+          "temp_max_c": 46
+        }
+      },
+      {
+        "rule": "source_citation",
+        "instruction": "Sempre cite a fonte/autor da fórmula utilizada ao final da resposta."
+      }
+    ]
+  },
+  "calculators": [
+    {
+      "id": "nefro_ckd_epi_2021",
+      "name": "CKD-EPI (2021) - Taxa de Filtração Glomerular",
+      "category": "Nefrologia",
+      "inputs": [
+        { "name": "creatinina_serica", "unit_options": ["mg/dL", "mmol/L"], "default_unit": "mg/dL" },
+        { "name": "idade", "unit": "anos" },
+        { "name": "sexo", "options": ["masculino", "feminino"] }
+      ],
+      "logic_description": "Fórmula complexa baseada em constantes que variam conforme sexo e nível de creatinina (<=0.7, <=0.9, >0.9).",
+      "output_unit": "mL/min/1.73m²",
+      "reference": "Levey AS et al. New England Journal of Medicine, 2021.",
+      "clinical_notes": [
+        "Não utilizar em Injúria Renal Aguda (IRA).",
+        "Não requer ajuste para raça (atualização 2021)."
+      ],
+      "safety_alerts": {
+        "if_result_below": 15,
+        "message": "CRÍTICO: Resultado compatível com Falência Renal (Estágio 5). Avaliar necessidade de diálise."
+      }
+    },
+    {
+      "id": "cardio_qtc_bazett",
+      "name": "Intervalo QT Corrigido (Bazett)",
+      "category": "Cardiologia",
+      "inputs": [
+        { "name": "intervalo_qt", "unit_options": ["ms", "seg"], "default_unit": "ms" },
+        { "name": "frequencia_cardiaca", "unit": "bpm" }
+      ],
+      "formula_latex": "QTc = QT / sqrt(60 / FC)",
+      "output_unit": "ms",
+      "reference": "Bazett HC. Heart, 1920.",
+      "clinical_notes": [
+        "Fórmula superestima o risco em taquicardias (>100 bpm). Prefira Fridericia nestes casos."
+      ],
+      "safety_alerts": {
+        "if_result_above": 500,
+        "message": "PERIGO: QTc > 500ms. Alto risco de Torsades de Pointes (arritmia fatal). Suspender drogas que prolongam QT."
+      }
+    },
+    {
+      "id": "cardio_grace_score",
+      "name": "Escore GRACE (Mortalidade em SCA)",
+      "category": "Cardiologia",
+      "inputs": [
+        { "name": "idade", "unit": "anos" },
+        { "name": "frequencia_cardiaca", "unit": "bpm" },
+        { "name": "pressao_arterial_sistolica", "unit": "mmHg" },
+        { "name": "creatinina", "unit": "mg/dL" },
+        { "name": "parada_cardiaca_admissao", "type": "boolean" },
+        { "name": "desvio_segmento_st", "type": "boolean" },
+        { "name": "enzimas_cardiacas_elevadas", "type": "boolean" },
+        { "name": "killip_class", "options": ["I", "II", "III", "IV"] }
+      ],
+      "logic_description": "Nomograma de regressão logística.",
+      "output_unit": "% (Probabilidade de morte intra-hospitalar e em 6 meses)",
+      "reference": "Eagle KA et al. JAMA, 2004.",
+      "clinical_notes": [
+        "Padrão ouro para estratificação de risco em Síndrome Coronariana Aguda."
+      ]
+    },
+    {
+      "id": "hepato_child_pugh",
+      "name": "Escore de Child-Pugh (Cirrose)",
+      "category": "Hepatologia",
+      "inputs": [
+        { "name": "bilirrubina_total", "unit": "mg/dL" },
+        { "name": "albumina", "unit": "g/dL" },
+        { "name": "inr", "unit": "absoluto" },
+        { "name": "ascite", "options": ["ausente", "leve", "moderada/tensa"] },
+        { "name": "encefalopatia", "options": ["ausente", "grau 1-2", "grau 3-4"] }
+      ],
+      "logic_description": "Soma de pontos (1 a 3 para cada variável).",
+      "output_unit": "Classe (A, B ou C)",
+      "reference": "Child CG, Turcotte JG. 1964 / Pugh RN et al. 1973.",
+      "safety_alerts": {
+        "if_result_equals": "Classe C",
+        "message": "Prognóstico reservado. Sobrevida em 1 ano < 50% sem transplante."
+      }
+    },
+    {
+      "id": "pneumo_curb65",
+      "name": "CURB-65 (Pneumonia Adquirida na Comunidade)",
+      "category": "Pneumologia/Emergência",
+      "inputs": [
+        { "name": "confusao_mental", "type": "boolean" },
+        { "name": "ureia", "unit": "mg/dL", "trigger_val": ">42.8" },
+        { "name": "frequencia_respiratoria", "unit": "irpm", "trigger_val": ">=30" },
+        { "name": "pressao_arterial", "description": "PAS < 90 ou PAD <= 60" },
+        { "name": "idade", "unit": "anos", "trigger_val": ">=65" }
+      ],
+      "logic_description": "Soma de 1 ponto para cada critério positivo.",
+      "output_unit": "Pontos (0-5) e Local de Tratamento sugerido",
+      "reference": "Lim WS et al. Thorax, 2003.",
+      "clinical_notes": [
+        "0-1: Tratamento ambulatorial.",
+        "2: Considerar internação.",
+        "3-5: Internação (UTI se 4-5)."
+      ]
+    },
+    {
+      "id": "uti_parkland",
+      "name": "Fórmula de Parkland (Hidratação em Queimados)",
+      "category": "Trauma/UTI",
+      "inputs": [
+        { "name": "peso", "unit": "kg" },
+        { "name": "area_corporal_queimada", "unit": "% (SCQ)" }
+      ],
+      "formula_latex": "Volume_24h = 4 * Peso * SCQ",
+      "output_unit": "mL (Lactato de Ringer)",
+      "reference": "Baxter CR. Parkland Hospital Protocol.",
+      "clinical_notes": [
+        "Administrar 50% do volume nas primeiras 8 horas e o restante nas 16 horas seguintes.",
+        "Atenção: SCQ não deve incluir eritema solar (vermelhidão simples)."
+      ],
+      "safety_alerts": {
+        "if_input_scq_above": 80,
+        "message": "ALERTA: SCQ > 80% tem altíssima mortalidade. Considere protocolos de queimadura maciça."
+      }
+    },
+    {
+      "id": "med_anthropometry_bmi",
+      "name": "Índice de Massa Corporal (IMC)",
+      "category": "Nutrição",
+      "inputs": [
+        { "name": "peso", "unit": "kg" },
+        { "name": "altura", "unit": "metros" }
+      ],
+      "formula_latex": "IMC = Peso / Altura^2",
+      "output_unit": "kg/m²",
+      "reference": "WHO (World Health Organization).",
+      "clinical_notes": [
+        "Não distingue massa muscular de gordura (falso positivo em fisiculturistas).",
+        "Inválido para gestantes e idosos sarcopênicos."
+      ],
+      "safety_alerts": {
+        "if_result_below": 16,
+        "message": "ALERTA: Magreza Grau III. Risco iminente de desnutrição grave."
+      }
+    },
+    {
+      "id": "ped_maintenance_fluids",
+      "name": "Regra de Holliday-Segar (Manutenção Hídrica Pediátrica)",
+      "category": "Pediatria",
+      "inputs": [
+        { "name": "peso", "unit": "kg" }
+      ],
+      "logic_description": "100mL/kg para os primeiros 10kg + 50mL/kg para os próximos 10kg + 20mL/kg para cada kg acima de 20.",
+      "output_unit": "mL/dia",
+      "reference": "Holliday MA, Segar WE. Pediatrics, 1957.",
+      "clinical_notes": [
+        "Usar apenas para manutenção. Não serve para ressuscitação volêmica (choque)."
+      ]
+    },
+    {
+      "id": "endo_insulin_homa_ir",
+      "name": "HOMA-IR (Resistência à Insulina)",
+      "category": "Endocrinologia",
+      "inputs": [
+        { "name": "glicemia_jejum", "unit_options": ["mg/dL", "mmol/L"], "default_unit": "mg/dL" },
+        { "name": "insulina_jejum", "unit": "uUI/mL" }
+      ],
+      "formula_latex": "(Insulina * Glicemia) / 405 (se mg/dL)",
+      "output_unit": "Índice",
+      "reference": "Matthews DR et al. Diabetologia, 1985.",
+      "clinical_notes": [
+        "Valores acima de 2.7 indicam alta resistência à insulina (padrão brasileiro pode variar)."
+      ]
+    },
+    {
+      "id": "drug_vasopressor_infusion",
+      "name": "Cálculo de Vazão de Noradrenalina",
+      "category": "UTI/Drogas",
+      "inputs": [
+        { "name": "peso", "unit": "kg" },
+        { "name": "dose_prescrita", "unit": "mcg/kg/min" },
+        { "name": "concentracao_solucao", "unit": "mg/mL" }
+      ],
+      "logic_description": "Converte mg para mcg, multiplica pelo peso e tempo, divide pela concentração.",
+      "output_unit": "mL/hora (Bomba de Infusão)",
+      "safety_alerts": {
+        "if_result_dose_above": 2.0,
+        "message": "ALERTA EXTREMO: Dose > 2 mcg/kg/min é considerada refratária. Verifique se há erro de input ou necessidade de segunda droga."
+      }
+    },
+    {
+      "id": "hemato_anc",
+      "name": "Contagem Absoluta de Neutrófilos (ANC)",
+      "category": "Hematologia",
+      "inputs": [
+        { "name": "leucocitos_totais", "unit": "células/mm3" },
+        { "name": "percentual_segmentados", "unit": "%" },
+        { "name": "percentual_bastoes", "unit": "%" }
+      ],
+      "formula_latex": "Leucocitos * ((Segs + Bastoes) / 100)",
+      "output_unit": "células/mm3",
+      "safety_alerts": {
+        "if_result_below": 500,
+        "message": "RISCO CRÍTICO: Neutropenia grave. Risco iminente de infecção fúngica/bacteriana sistêmica. Precaução de isolamento necessária."
+      }
+    }
+  ]
+}
