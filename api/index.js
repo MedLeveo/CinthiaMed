@@ -9,9 +9,6 @@ import rateLimit from 'express-rate-limit';
 
 const { Pool } = pg;
 
-// Import database queries
-import { conversationQueries } from '../server/database/db.js';
-
 // Initialize OpenAI
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY?.replace(/\s+/g, '') || ''
@@ -84,6 +81,9 @@ const authMiddleware = async (req, res, next) => {
 
 // Aplicar rate limiting geral
 app.use('/api', apiLimiter);
+
+// Cache de conversas em memória (temporário até migrar DB para Vercel)
+const conversationCache = new Map();
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -222,11 +222,11 @@ app.get('/api/auth/google', (req, res) => {
   res.redirect(`${googleAuthUrl}?${params.toString()}`);
 });
 
-// Chat endpoint - COM AUTENTICAÇÃO E VERIFICAÇÃO DE OWNERSHIP
+// Chat endpoint - COM AUTENTICAÇÃO (cache em memória)
 app.post('/api/chat', authMiddleware, async (req, res) => {
   try {
     const { message, assistantType = 'geral', conversationId, systemMessage } = req.body;
-    const userId = req.user.userId; // Do JWT decodificado
+    const userId = req.user.userId;
 
     if (!message || message.trim() === '') {
       return res.status(400).json({
@@ -235,59 +235,16 @@ app.post('/api/chat', authMiddleware, async (req, res) => {
       });
     }
 
-    let conversation;
+    // Recuperar histórico do cache (chave: userId_conversationId)
     let conversationHistory = [];
+    const newConversationId = conversationId || `conv_${userId}_${Date.now()}`;
+    const cacheKey = `${userId}_${newConversationId}`;
 
-    // Se há conversationId, verificar ownership e recuperar histórico
-    if (conversationId) {
-      // Buscar conversa do banco de dados
-      const conversationResult = await pool.query(
-        'SELECT * FROM conversations WHERE id = $1',
-        [conversationId]
-      );
-
-      if (conversationResult.rows.length === 0) {
-        return res.status(404).json({
-          success: false,
-          error: 'Conversa não encontrada'
-        });
-      }
-
-      conversation = conversationResult.rows[0];
-
-      // VERIFICAÇÃO DE OWNERSHIP - Critical Security Check
-      if (conversation.user_id !== userId) {
-        return res.status(403).json({
-          success: false,
-          error: 'Acesso negado: esta conversa não pertence a você'
-        });
-      }
-
-      // Recuperar mensagens da conversa (EXCLUINDO system messages)
-      const messages = await conversationQueries.getMessages(conversationId);
-      conversationHistory = messages
-        .filter(m => m.role !== 'system') // Filtrar system messages antigas
-        .map(m => ({
-          role: m.role,
-          content: m.content
-        }));
-
-      // Atualizar timestamp da conversa
-      await pool.query(
-        'UPDATE conversations SET updated_at = CURRENT_TIMESTAMP WHERE id = $1',
-        [conversationId]
-      );
-    } else {
-      // Criar nova conversa
-      conversation = await conversationQueries.createConversation(
-        userId,
-        message.substring(0, 50), // Título baseado na primeira mensagem
-        assistantType
-      );
+    if (conversationId && conversationCache.has(cacheKey)) {
+      conversationHistory = conversationCache.get(cacheKey);
     }
 
     // System message dinâmico baseado no contexto do frontend
-    // Se não for fornecido, usar o padrão
     const defaultSystemMessage = 'Você é a CinthiaMed, uma assistente médica virtual altamente especializada e confiável. Base suas respostas em evidências científicas.';
     const activeSystemMessage = systemMessage || defaultSystemMessage;
 
@@ -302,18 +259,27 @@ app.post('/api/chat', authMiddleware, async (req, res) => {
       model: 'gpt-4o',
       messages: messages,
       temperature: 0.7,
-      max_tokens: 3000 // Aumentado para suportar respostas mais detalhadas
+      max_tokens: 3000
     });
 
     const response = completion.choices[0].message.content;
 
-    // Salvar mensagens no banco de dados
-    await conversationQueries.addMessage(conversation.id, 'user', message);
-    await conversationQueries.addMessage(conversation.id, 'assistant', response);
+    // Atualizar cache com novo histórico
+    conversationHistory.push(
+      { role: 'user', content: message },
+      { role: 'assistant', content: response }
+    );
+    conversationCache.set(cacheKey, conversationHistory);
+
+    // Limpar cache antigo (manter apenas últimas 100 conversas)
+    if (conversationCache.size > 100) {
+      const firstKey = conversationCache.keys().next().value;
+      conversationCache.delete(firstKey);
+    }
 
     res.json({
       success: true,
-      conversationId: conversation.id,
+      conversationId: newConversationId,
       response: response,
       metadata: {
         model: 'gpt-4o',
@@ -472,124 +438,6 @@ Gere um prontuário médico completo e estruturado em formato Markdown com as se
     res.status(500).json({
       success: false,
       error: 'Erro ao processar consulta',
-      message: error.message
-    });
-  }
-});
-
-// Endpoint para listar conversas do usuário - COM AUTENTICAÇÃO
-app.get('/api/conversations', authMiddleware, async (req, res) => {
-  try {
-    const userId = req.user.userId;
-    const limit = parseInt(req.query.limit) || 50;
-
-    const conversations = await conversationQueries.listByUser(userId, limit);
-
-    res.json({
-      success: true,
-      conversations: conversations
-    });
-
-  } catch (error) {
-    console.error('List conversations error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Erro ao listar conversas',
-      message: error.message
-    });
-  }
-});
-
-// Endpoint para buscar uma conversa específica - COM VERIFICAÇÃO DE OWNERSHIP
-app.get('/api/conversations/:conversationId', authMiddleware, async (req, res) => {
-  try {
-    const userId = req.user.userId;
-    const { conversationId } = req.params;
-
-    // Buscar conversa
-    const conversationResult = await pool.query(
-      'SELECT * FROM conversations WHERE id = $1',
-      [conversationId]
-    );
-
-    if (conversationResult.rows.length === 0) {
-      return res.status(404).json({
-        success: false,
-        error: 'Conversa não encontrada'
-      });
-    }
-
-    const conversation = conversationResult.rows[0];
-
-    // VERIFICAÇÃO DE OWNERSHIP - Critical Security Check
-    if (conversation.user_id !== userId) {
-      return res.status(403).json({
-        success: false,
-        error: 'Acesso negado: esta conversa não pertence a você'
-      });
-    }
-
-    // Buscar mensagens da conversa
-    const messages = await conversationQueries.getMessages(conversationId);
-
-    res.json({
-      success: true,
-      conversation: conversation,
-      messages: messages
-    });
-
-  } catch (error) {
-    console.error('Get conversation error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Erro ao buscar conversa',
-      message: error.message
-    });
-  }
-});
-
-// Endpoint para deletar uma conversa - COM VERIFICAÇÃO DE OWNERSHIP
-app.delete('/api/conversations/:conversationId', authMiddleware, async (req, res) => {
-  try {
-    const userId = req.user.userId;
-    const { conversationId } = req.params;
-
-    // Buscar conversa para verificar ownership
-    const conversationResult = await pool.query(
-      'SELECT * FROM conversations WHERE id = $1',
-      [conversationId]
-    );
-
-    if (conversationResult.rows.length === 0) {
-      return res.status(404).json({
-        success: false,
-        error: 'Conversa não encontrada'
-      });
-    }
-
-    const conversation = conversationResult.rows[0];
-
-    // VERIFICAÇÃO DE OWNERSHIP - Critical Security Check
-    if (conversation.user_id !== userId) {
-      return res.status(403).json({
-        success: false,
-        error: 'Acesso negado: você não pode deletar esta conversa'
-      });
-    }
-
-    // Deletar conversa (mensagens serão deletadas em cascata se configurado no banco)
-    await pool.query('DELETE FROM conversations WHERE id = $1', [conversationId]);
-
-    res.json({
-      success: true,
-      message: 'Conversa deletada com sucesso'
-    });
-
-  } catch (error) {
-    console.error('Delete conversation error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Erro ao deletar conversa',
       message: error.message
     });
   }
