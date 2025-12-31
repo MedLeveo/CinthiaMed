@@ -139,4 +139,6 @@ app.get('/api/auth/google', (req, res) => {
 });
 
 // Export handler para Vercel
-export default app;
+export default function handler(req, res) {
+  return app(req, res);
+}
