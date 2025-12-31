@@ -103,6 +103,7 @@ const CinthiaMed = ({ user, onLogout }) => {
     saveCurrentConversation();
     setMessages([]);
     setCurrentConversationId(`conv_${Date.now()}`);
+    setSelectedAssistant('Assistente Geral'); // Reset to default assistant
   };
 
   // Função para carregar conversa
