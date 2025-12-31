@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import API_URL from './config/api';
 
 const CinthiaMed = ({ user, onLogout }) => {
@@ -16,6 +16,26 @@ const CinthiaMed = ({ user, onLogout }) => {
   const [currentConversationId, setCurrentConversationId] = useState(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+
+  // Load conversations from localStorage on mount
+  useEffect(() => {
+    const savedConversations = localStorage.getItem(`conversations_${user.email}`);
+    if (savedConversations) {
+      try {
+        const parsed = JSON.parse(savedConversations);
+        setConversations(parsed);
+      } catch (error) {
+        console.error('Error loading conversations:', error);
+      }
+    }
+  }, [user.email]);
+
+  // Save conversations to localStorage whenever they change
+  useEffect(() => {
+    if (conversations.length > 0) {
+      localStorage.setItem(`conversations_${user.email}`, JSON.stringify(conversations));
+    }
+  }, [conversations, user.email]);
 
   // Estados para gravação de reunião
   const [isRecording, setIsRecording] = useState(false);
