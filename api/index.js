@@ -285,6 +285,91 @@ Gere um prontuário médico completo e estruturado em formato Markdown com as se
   }
 });
 
+// Process consultation endpoint (with audio transcription support)
+app.post('/api/medical-record/process-consultation', async (req, res) => {
+  try {
+    const { audioData, patientData } = req.body;
+
+    if (!audioData) {
+      return res.status(400).json({
+        success: false,
+        error: 'Áudio não fornecido'
+      });
+    }
+
+    // Convert base64 to buffer and create a File-like object for Whisper
+    const base64Audio = audioData.includes(',') ? audioData.split(',')[1] : audioData;
+    const audioBuffer = Buffer.from(base64Audio, 'base64');
+
+    // Create a File object from buffer (required by OpenAI Whisper API)
+    const file = new File([audioBuffer], 'audio.webm', { type: 'audio/webm' });
+
+    // Transcribe audio using Whisper
+    const transcriptionResponse = await openai.audio.transcriptions.create({
+      file: file,
+      model: 'whisper-1',
+      language: 'pt'
+    });
+
+    const transcript = transcriptionResponse.text;
+
+    if (!transcript || transcript.trim() === '') {
+      return res.status(400).json({
+        success: false,
+        error: 'Não foi possível transcrever o áudio'
+      });
+    }
+
+    // Generate medical report
+    const prompt = `Analise a seguinte consulta médica e gere um prontuário estruturado:
+
+Paciente: ${patientData?.name || 'Não informado'}
+Idade: ${patientData?.age || 'Não informada'}
+Sexo: ${patientData?.gender || 'Não informado'}
+Observações: ${patientData?.observations || 'Nenhuma'}
+
+Transcrição da consulta:
+${transcript}
+
+Gere um prontuário médico completo e estruturado em formato Markdown com as seguintes seções:
+## Identificação do Paciente
+## Anamnese
+## Exame Físico
+## Hipóteses Diagnósticas
+## Conduta / Plano Terapêutico
+## Observações`;
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o',
+      messages: [
+        { role: 'system', content: 'Você é um médico especialista em elaborar prontuários médicos detalhados e bem estruturados.' },
+        { role: 'user', content: prompt }
+      ],
+      temperature: 0.3,
+      max_tokens: 3000
+    });
+
+    const report = completion.choices[0].message.content;
+
+    res.json({
+      success: true,
+      report: report,
+      transcript: transcript,
+      metadata: {
+        timestamp: new Date().toISOString()
+      }
+    });
+
+  } catch (error) {
+    console.error('Process consultation error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erro ao processar consulta',
+      message: error.message
+    });
+  }
+});
+
 // Google OAuth Callback
 app.get('/api/auth/google/callback', async (req, res) => {
   try {
