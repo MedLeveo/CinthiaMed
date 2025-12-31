@@ -110,8 +110,14 @@ const CinthiaMed = ({ user, onLogout }) => {
     saveCurrentConversation();
     const conversation = conversations.find(c => c.id === conversationId);
     if (conversation) {
-      setMessages(conversation.messages);
+      setMessages(conversation.messages || []);
       setCurrentConversationId(conversationId);
+      setCurrentView('chat');
+    } else {
+      // Se a conversa não existe, criar uma nova
+      setMessages([]);
+      setCurrentConversationId(`conv_${Date.now()}`);
+      setCurrentView('chat');
     }
   };
 
