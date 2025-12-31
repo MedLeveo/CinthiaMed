@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import API_URL from './config/api';
 
 const CinthiaMed = ({ user, onLogout }) => {
@@ -61,6 +61,9 @@ const CinthiaMed = ({ user, onLogout }) => {
   const [scoreResult, setScoreResult] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Todos');
+
+  // Ref to track previous assistant
+  const prevAssistantRef = useRef(selectedAssistant);
 
   // Função para mostrar toast
   const showToastMessage = (message) => {
@@ -614,6 +617,16 @@ const CinthiaMed = ({ user, onLogout }) => {
       setCurrentView('chat');
     }
   };
+
+  // Create new conversation when changing assistant type (if there are messages)
+  useEffect(() => {
+    if (prevAssistantRef.current !== selectedAssistant && messages.length > 0) {
+      saveCurrentConversation();
+      setMessages([]);
+      setCurrentConversationId(`conv_${Date.now()}`);
+    }
+    prevAssistantRef.current = selectedAssistant;
+  }, [selectedAssistant, messages.length]);
 
   // Funções da Calculadora Médica
   const calculateResult = (calculatorId, inputs) => {
