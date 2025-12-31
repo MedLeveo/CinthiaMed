@@ -133,9 +133,90 @@ app.post('/api/auth/logout', (req, res) => {
   res.json({ message: 'Logout realizado' });
 });
 
-// Google OAuth placeholder (needs full implementation)
+// Google OAuth - Redirect to Google
 app.get('/api/auth/google', (req, res) => {
-  res.status(501).json({ error: 'Google OAuth em implementação' });
+  const googleAuthUrl = 'https://accounts.google.com/o/oauth2/v2/auth';
+  const params = new URLSearchParams({
+    client_id: process.env.GOOGLE_CLIENT_ID,
+    redirect_uri: process.env.GOOGLE_CALLBACK_URL,
+    response_type: 'code',
+    scope: 'email profile',
+    access_type: 'offline',
+    prompt: 'consent'
+  });
+
+  res.redirect(`${googleAuthUrl}?${params.toString()}`);
+});
+
+// Google OAuth Callback
+app.get('/api/auth/google/callback', async (req, res) => {
+  try {
+    const { code } = req.query;
+
+    if (!code) {
+      return res.redirect(`${process.env.FRONTEND_URL}?error=no_code`);
+    }
+
+    // Exchange code for tokens
+    const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        code,
+        client_id: process.env.GOOGLE_CLIENT_ID,
+        client_secret: process.env.GOOGLE_CLIENT_SECRET,
+        redirect_uri: process.env.GOOGLE_CALLBACK_URL,
+        grant_type: 'authorization_code'
+      })
+    });
+
+    const tokens = await tokenResponse.json();
+
+    if (!tokens.access_token) {
+      return res.redirect(`${process.env.FRONTEND_URL}?error=token_error`);
+    }
+
+    // Get user info
+    const userResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+      headers: { Authorization: `Bearer ${tokens.access_token}` }
+    });
+
+    const googleUser = await userResponse.json();
+
+    // Check if user exists
+    let result = await pool.query('SELECT * FROM users WHERE email = $1', [googleUser.email]);
+
+    let user;
+    if (result.rows.length === 0) {
+      // Create new user
+      result = await pool.query(
+        'INSERT INTO users (name, email, google_id, avatar_url) VALUES ($1, $2, $3, $4) RETURNING id, name, email',
+        [googleUser.name, googleUser.email, googleUser.id, googleUser.picture]
+      );
+      user = result.rows[0];
+    } else {
+      // Update existing user
+      result = await pool.query(
+        'UPDATE users SET google_id = $1, avatar_url = $2, last_login = NOW() WHERE email = $3 RETURNING id, name, email',
+        [googleUser.id, googleUser.picture, googleUser.email]
+      );
+      user = result.rows[0];
+    }
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { userId: user.id, email: user.email },
+      process.env.SESSION_SECRET || 'fallback-secret',
+      { expiresIn: '24h' }
+    );
+
+    // Redirect to frontend with token
+    res.redirect(`${process.env.FRONTEND_URL}?token=${token}&user=${encodeURIComponent(JSON.stringify({ name: user.name, email: user.email }))}`);
+
+  } catch (error) {
+    console.error('Google OAuth error:', error);
+    res.redirect(`${process.env.FRONTEND_URL}?error=oauth_failed`);
+  }
 });
 
 // Export handler para Vercel

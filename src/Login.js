@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import API_URL from './config/api';
 
 const Login = ({ onLoginSuccess, onForgotPassword }) => {
@@ -12,6 +12,33 @@ const Login = ({ onLoginSuccess, onForgotPassword }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordErrors, setPasswordErrors] = useState([]);
+
+  // Check for Google OAuth callback
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    const userStr = urlParams.get('user');
+    const error = urlParams.get('error');
+
+    if (error) {
+      setError('Erro ao fazer login com Google');
+      window.history.replaceState({}, document.title, window.location.pathname);
+      return;
+    }
+
+    if (token && userStr) {
+      try {
+        const user = JSON.parse(decodeURIComponent(userStr));
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(user));
+        window.history.replaceState({}, document.title, window.location.pathname);
+        onLoginSuccess(user);
+      } catch (err) {
+        console.error('Error parsing OAuth response:', err);
+        setError('Erro ao processar login');
+      }
+    }
+  }, [onLoginSuccess]);
 
   // Validar email (aceita apenas Gmail ou emails corporativos)
   const validateEmail = (email) => {
