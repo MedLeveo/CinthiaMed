@@ -1831,61 +1831,84 @@ Gere UMA pergunta de acompanhamento relevante e útil que eu possa fazer para ap
                             cursor: 'pointer',
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '4px',
-                            transition: 'all 0.2s'
+                            gap: '6px',
+                            transition: 'all 0.2s',
+                            fontFamily: "'Outfit', sans-serif"
                           }}
                           onMouseEnter={(e) => {
-                            e.target.style.backgroundColor = '#3a4152';
-                            e.target.style.color = '#e2e8f0';
+                            e.currentTarget.style.backgroundColor = '#3a4152';
+                            e.currentTarget.style.color = '#e2e8f0';
                           }}
                           onMouseLeave={(e) => {
-                            e.target.style.backgroundColor = 'transparent';
-                            e.target.style.color = '#94a3b8';
+                            e.currentTarget.style.backgroundColor = 'transparent';
+                            e.currentTarget.style.color = '#94a3b8';
                           }}
                         >
-                          📋 Copiar
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                          </svg>
+                          Copiar
                         </button>
                         <button
                           onClick={() => showToastMessage('Obrigado pelo feedback!')}
                           style={{
-                            padding: '6px 10px',
+                            padding: '6px 12px',
                             backgroundColor: 'transparent',
                             border: '1px solid #3a4152',
                             borderRadius: '8px',
                             color: '#94a3b8',
-                            fontSize: '16px',
+                            fontSize: '12px',
                             cursor: 'pointer',
-                            transition: 'all 0.2s'
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            transition: 'all 0.2s',
+                            fontFamily: "'Outfit', sans-serif"
                           }}
                           onMouseEnter={(e) => {
-                            e.target.style.backgroundColor = '#3a4152';
+                            e.currentTarget.style.backgroundColor = '#3a4152';
+                            e.currentTarget.style.color = '#e2e8f0';
                           }}
                           onMouseLeave={(e) => {
-                            e.target.style.backgroundColor = 'transparent';
+                            e.currentTarget.style.backgroundColor = 'transparent';
+                            e.currentTarget.style.color = '#94a3b8';
                           }}
                         >
-                          👍
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+                          </svg>
+                          Útil
                         </button>
                         <button
                           onClick={() => showToastMessage('Vamos melhorar!')}
                           style={{
-                            padding: '6px 10px',
+                            padding: '6px 12px',
                             backgroundColor: 'transparent',
                             border: '1px solid #3a4152',
                             borderRadius: '8px',
                             color: '#94a3b8',
-                            fontSize: '16px',
+                            fontSize: '12px',
                             cursor: 'pointer',
-                            transition: 'all 0.2s'
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            transition: 'all 0.2s',
+                            fontFamily: "'Outfit', sans-serif"
                           }}
                           onMouseEnter={(e) => {
-                            e.target.style.backgroundColor = '#3a4152';
+                            e.currentTarget.style.backgroundColor = '#3a4152';
+                            e.currentTarget.style.color = '#e2e8f0';
                           }}
                           onMouseLeave={(e) => {
-                            e.target.style.backgroundColor = 'transparent';
+                            e.currentTarget.style.backgroundColor = 'transparent';
+                            e.currentTarget.style.color = '#94a3b8';
                           }}
                         >
-                          👎
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" transform="scale(1, -1)">
+                            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+                          </svg>
+                          Não útil
                         </button>
                       </div>
                     )}
