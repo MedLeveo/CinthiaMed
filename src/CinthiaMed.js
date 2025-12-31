@@ -23,10 +23,14 @@ const CinthiaMed = ({ user, onLogout }) => {
 
   // Estado para verificar se é a primeira visita
   const [isReturningUser, setIsReturningUser] = useState(false);
+  // Estado para controlar se deve mostrar a mensagem de boas-vindas
+  const [showWelcomeMessage, setShowWelcomeMessage] = useState(false);
 
   // Load conversations from localStorage on mount
   useEffect(() => {
     const savedConversations = localStorage.getItem(`conversations_${user.email}`);
+    const hasSeenWelcome = localStorage.getItem(`hasSeenWelcome_${user.email}`);
+
     if (savedConversations) {
       try {
         const parsed = JSON.parse(savedConversations);
@@ -36,6 +40,13 @@ const CinthiaMed = ({ user, onLogout }) => {
       } catch (error) {
         console.error('Error loading conversations:', error);
       }
+    }
+
+    // Mostrar mensagem de boas-vindas apenas se nunca foi vista nesta sessão
+    if (!hasSeenWelcome) {
+      setShowWelcomeMessage(true);
+      // Marcar que a mensagem foi vista
+      localStorage.setItem(`hasSeenWelcome_${user.email}`, 'true');
     }
   }, [user.email]);
 
@@ -47,6 +58,13 @@ const CinthiaMed = ({ user, onLogout }) => {
       setIsReturningUser(true);
     }
   }, [conversations, user.email]);
+
+  // Esconder mensagem de boas-vindas quando usuário começar a usar o app
+  useEffect(() => {
+    if (messages.length > 0) {
+      setShowWelcomeMessage(false);
+    }
+  }, [messages.length]);
 
   // Estados para gravação de reunião
   const [isRecording, setIsRecording] = useState(false);
@@ -1487,6 +1505,8 @@ Gere UMA pergunta de acompanhamento relevante e útil que eu possa fazer para ap
               <button
                 onClick={() => {
                   setShowUserMenu(false);
+                  // Limpar o flag de boas-vindas ao fazer logout
+                  localStorage.removeItem(`hasSeenWelcome_${user.email}`);
                   onLogout();
                 }}
                 style={{
@@ -1680,18 +1700,20 @@ Gere UMA pergunta de acompanhamento relevante e útil que eu possa fazer para ap
                 </div>
               </div>
 
-              <h1 style={{
-                fontSize: '28px',
-                fontWeight: '300',
-                color: '#e2e8f0',
-                marginBottom: '20px',
-                letterSpacing: '-0.5px',
-              }}>
-                {isReturningUser
-                  ? `Bem-vindo(a) de volta, ${user?.name?.split(' ')[0] || 'Doutor(a)'}!`
-                  : `Bem-vindo(a) à CinthiaMed, ${user?.name?.split(' ')[0] || 'Doutor(a)'}!`
-                }
-              </h1>
+              {showWelcomeMessage && (
+                <h1 style={{
+                  fontSize: '28px',
+                  fontWeight: '300',
+                  color: '#e2e8f0',
+                  marginBottom: '20px',
+                  letterSpacing: '-0.5px',
+                }}>
+                  {isReturningUser
+                    ? `Bem-vindo(a) de volta, ${user?.name?.split(' ')[0] || 'Doutor(a)'}!`
+                    : `Bem-vindo(a) à CinthiaMed, ${user?.name?.split(' ')[0] || 'Doutor(a)'}!`
+                  }
+                </h1>
+              )}
             </div>
           ) : (
             <div style={{
