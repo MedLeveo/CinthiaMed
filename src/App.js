@@ -232,6 +232,14 @@ const App = () => {
               setCurrentView('forgot-password');
               window.history.pushState({}, '', '/forgot-password');
             }}
+            onTermsClick={() => {
+              setCurrentView('terms-of-service');
+              window.history.pushState({}, '', '/terms-of-service');
+            }}
+            onPrivacyClick={() => {
+              setCurrentView('privacy-policy');
+              window.history.pushState({}, '', '/privacy-policy');
+            }}
           />
         );
     }

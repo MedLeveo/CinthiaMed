@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import API_URL from './config/api';
 
-const Login = ({ onLoginSuccess, onForgotPassword }) => {
+const Login = ({ onLoginSuccess, onForgotPassword, onTermsClick, onPrivacyClick }) => {
   const [isLogin, setIsLogin] = useState(true); // true = login, false = cadastro
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -557,7 +557,7 @@ const Login = ({ onLoginSuccess, onForgotPassword }) => {
             }}>
               Ao criar sua conta, você concorda com nossos{' '}
               <span
-                onClick={() => window.history.pushState({}, '', '/terms-of-service') || window.location.reload()}
+                onClick={onTermsClick}
                 style={{
                   color: '#8b5cf6',
                   cursor: 'pointer',
@@ -571,7 +571,7 @@ const Login = ({ onLoginSuccess, onForgotPassword }) => {
               </span>
               {' '}e confirma que leu nossa{' '}
               <span
-                onClick={() => window.history.pushState({}, '', '/privacy-policy') || window.location.reload()}
+                onClick={onPrivacyClick}
                 style={{
                   color: '#8b5cf6',
                   cursor: 'pointer',
