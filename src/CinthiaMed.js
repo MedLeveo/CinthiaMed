@@ -972,16 +972,6 @@ const CinthiaMed = ({ user, onLogout }) => {
     }
   };
 
-  // Simulação de contador de tempo durante a gravação
-  React.useEffect(() => {
-    let interval;
-    if (isRecording) {
-      interval = setInterval(() => {
-        setRecordingTime(prev => prev + 1);
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [isRecording]);
 
   // Helper function to get category for a score
   const getCategoryForScore = (scoreName) => {
