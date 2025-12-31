@@ -141,11 +141,19 @@ app.post('/api/auth/logout', (req, res) => {
 
 // Debug endpoint to check Google OAuth configuration
 app.get('/api/auth/google/debug', (req, res) => {
+  const clientId = process.env.GOOGLE_CLIENT_ID || '';
+  const callbackUrl = process.env.GOOGLE_CALLBACK_URL || '';
+
   res.json({
-    client_id: process.env.GOOGLE_CLIENT_ID ? 'Set ✓' : 'Missing ✗',
-    client_secret: process.env.GOOGLE_CLIENT_SECRET ? 'Set ✓' : 'Missing ✗',
-    callback_url: process.env.GOOGLE_CALLBACK_URL || 'Not set',
-    frontend_url: process.env.FRONTEND_URL || 'Not set'
+    client_id_set: !!process.env.GOOGLE_CLIENT_ID,
+    client_id_length: clientId.length,
+    client_id_preview: clientId ? `${clientId.substring(0, 20)}...` : 'Not set',
+    client_secret_set: !!process.env.GOOGLE_CLIENT_SECRET,
+    callback_url: callbackUrl,
+    callback_url_length: callbackUrl.length,
+    frontend_url: process.env.FRONTEND_URL || 'Not set',
+    // Mostrar a URL completa que será enviada ao Google
+    oauth_url_preview: `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(callbackUrl)}&response_type=code&scope=email%20profile`
   });
 });
 
