@@ -17,6 +17,9 @@ const CinthiaMed = ({ user, onLogout }) => {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
 
+  // Estado para verificar se é a primeira visita
+  const [isReturningUser, setIsReturningUser] = useState(false);
+
   // Load conversations from localStorage on mount
   useEffect(() => {
     const savedConversations = localStorage.getItem(`conversations_${user.email}`);
@@ -24,6 +27,8 @@ const CinthiaMed = ({ user, onLogout }) => {
       try {
         const parsed = JSON.parse(savedConversations);
         setConversations(parsed);
+        // Se tem conversas salvas, é um usuário que já usou o app
+        setIsReturningUser(true);
       } catch (error) {
         console.error('Error loading conversations:', error);
       }
@@ -34,6 +39,8 @@ const CinthiaMed = ({ user, onLogout }) => {
   useEffect(() => {
     if (conversations.length > 0) {
       localStorage.setItem(`conversations_${user.email}`, JSON.stringify(conversations));
+      // Marcar como usuário recorrente após salvar a primeira conversa
+      setIsReturningUser(true);
     }
   }, [conversations, user.email]);
 
@@ -1604,9 +1611,9 @@ const CinthiaMed = ({ user, onLogout }) => {
                 marginBottom: '20px',
                 letterSpacing: '-0.5px',
               }}>
-                {conversations.length === 0
-                  ? `Bem-vindo(a) à CinthiaMed, ${user?.name?.split(' ')[0] || 'Doutor(a)'}!`
-                  : `Bem-vindo(a) de volta, ${user?.name?.split(' ')[0] || 'Doutor(a)'}!`
+                {isReturningUser
+                  ? `Bem-vindo(a) de volta, ${user?.name?.split(' ')[0] || 'Doutor(a)'}!`
+                  : `Bem-vindo(a) à CinthiaMed, ${user?.name?.split(' ')[0] || 'Doutor(a)'}!`
                 }
               </h1>
             </div>
