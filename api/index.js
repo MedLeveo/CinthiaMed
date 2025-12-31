@@ -5,8 +5,12 @@ import pg from 'pg';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import OpenAI from 'openai';
+import rateLimit from 'express-rate-limit';
 
 const { Pool } = pg;
+
+// Import database queries
+import { conversationQueries } from '../server/database/db.js';
 
 // Initialize OpenAI
 const openai = new OpenAI({
@@ -23,13 +27,63 @@ const pool = new Pool({
   }
 });
 
-// CORS
+// CORS com configurações mais seguras
 app.use(cors({
-  origin: true,
-  credentials: true
+  origin: process.env.FRONTEND_URL || 'https://cinthiamed.vercel.app',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+
+// Rate Limiting para login - 5 tentativas por 15 minutos
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 5, // 5 tentativas
+  message: { error: 'Muitas tentativas de login. Tente novamente em 15 minutos.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true // Não contar tentativas bem-sucedidas
+});
+
+// Rate Limiting para registro - 3 contas por hora por IP
+const registerLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hora
+  max: 3,
+  message: { error: 'Muitas tentativas de registro. Tente novamente mais tarde.' },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+// Rate Limiting geral para API
+const apiLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minuto
+  max: 100, // 100 requisições por minuto
+  message: { error: 'Muitas requisições. Tente novamente em breve.' },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+// Middleware de autenticação
+const authMiddleware = async (req, res, next) => {
+  try {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+
+    if (!token) {
+      return res.status(401).json({ error: 'Token não fornecido' });
+    }
+
+    const decoded = jwt.verify(token, process.env.SESSION_SECRET || 'fallback-secret');
+    req.user = decoded; // Adiciona informações do usuário à requisição
+    next();
+  } catch (error) {
+    return res.status(401).json({ error: 'Token inválido ou expirado' });
+  }
+};
+
+// Aplicar rate limiting geral
+app.use('/api', apiLimiter);
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -37,9 +91,18 @@ app.get('/api/health', (req, res) => {
 });
 
 // Register
-app.post('/api/auth/register', async (req, res) => {
+app.post('/api/auth/register', registerLimiter, async (req, res) => {
   try {
     const { name, email, password } = req.body;
+
+    // Validar inputs
+    if (!name || !email || !password) {
+      return res.status(400).json({ error: 'Todos os campos são obrigatórios' });
+    }
+
+    if (password.length < 8) {
+      return res.status(400).json({ error: 'Senha deve ter no mínimo 8 caracteres' });
+    }
 
     // Check if user exists
     const userCheck = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
@@ -48,8 +111,8 @@ app.post('/api/auth/register', async (req, res) => {
       return res.status(400).json({ error: 'Email já cadastrado' });
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // Hash password com 12 rounds (mais seguro)
+    const hashedPassword = await bcrypt.hash(password, 12);
 
     // Insert user
     const result = await pool.query(
@@ -78,9 +141,14 @@ app.post('/api/auth/register', async (req, res) => {
 });
 
 // Login
-app.post('/api/auth/login', async (req, res) => {
+app.post('/api/auth/login', loginLimiter, async (req, res) => {
   try {
     const { email, password } = req.body;
+
+    // Validar inputs
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email e senha são obrigatórios' });
+    }
 
     // Find user
     const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
@@ -154,13 +222,11 @@ app.get('/api/auth/google', (req, res) => {
   res.redirect(`${googleAuthUrl}?${params.toString()}`);
 });
 
-// Cache simples em memória para conversas
-const conversationCache = new Map();
-
-// Chat endpoint
-app.post('/api/chat', async (req, res) => {
+// Chat endpoint - COM AUTENTICAÇÃO E VERIFICAÇÃO DE OWNERSHIP
+app.post('/api/chat', authMiddleware, async (req, res) => {
   try {
     const { message, assistantType = 'geral', conversationId } = req.body;
+    const userId = req.user.userId; // Do JWT decodificado
 
     if (!message || message.trim() === '') {
       return res.status(400).json({
@@ -169,10 +235,53 @@ app.post('/api/chat', async (req, res) => {
       });
     }
 
-    // Recuperar histórico da conversa
+    let conversation;
     let conversationHistory = [];
-    if (conversationId && conversationCache.has(conversationId)) {
-      conversationHistory = conversationCache.get(conversationId);
+
+    // Se há conversationId, verificar ownership e recuperar histórico
+    if (conversationId) {
+      // Buscar conversa do banco de dados
+      const conversationResult = await pool.query(
+        'SELECT * FROM conversations WHERE id = $1',
+        [conversationId]
+      );
+
+      if (conversationResult.rows.length === 0) {
+        return res.status(404).json({
+          success: false,
+          error: 'Conversa não encontrada'
+        });
+      }
+
+      conversation = conversationResult.rows[0];
+
+      // VERIFICAÇÃO DE OWNERSHIP - Critical Security Check
+      if (conversation.user_id !== userId) {
+        return res.status(403).json({
+          success: false,
+          error: 'Acesso negado: esta conversa não pertence a você'
+        });
+      }
+
+      // Recuperar mensagens da conversa
+      const messages = await conversationQueries.getMessages(conversationId);
+      conversationHistory = messages.map(m => ({
+        role: m.role,
+        content: m.content
+      }));
+
+      // Atualizar timestamp da conversa
+      await pool.query(
+        'UPDATE conversations SET updated_at = CURRENT_TIMESTAMP WHERE id = $1',
+        [conversationId]
+      );
+    } else {
+      // Criar nova conversa
+      conversation = await conversationQueries.createConversation(
+        userId,
+        message.substring(0, 50), // Título baseado na primeira mensagem
+        assistantType
+      );
     }
 
     // Gerar resposta com GPT
@@ -191,23 +300,13 @@ app.post('/api/chat', async (req, res) => {
 
     const response = completion.choices[0].message.content;
 
-    // Atualizar histórico da conversa
-    const newConversationId = conversationId || `conv_${Date.now()}`;
-    conversationHistory.push(
-      { role: 'user', content: message },
-      { role: 'assistant', content: response }
-    );
-    conversationCache.set(newConversationId, conversationHistory);
-
-    // Limpar cache antigo (manter apenas últimas 100 conversas)
-    if (conversationCache.size > 100) {
-      const firstKey = conversationCache.keys().next().value;
-      conversationCache.delete(firstKey);
-    }
+    // Salvar mensagens no banco de dados
+    await conversationQueries.addMessage(conversation.id, 'user', message);
+    await conversationQueries.addMessage(conversation.id, 'assistant', response);
 
     res.json({
       success: true,
-      conversationId: newConversationId,
+      conversationId: conversation.id,
       response: response,
       metadata: {
         model: 'gpt-4o',
@@ -225,8 +324,8 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
-// Medical record analysis endpoint
-app.post('/api/medical-record', async (req, res) => {
+// Medical record analysis endpoint - COM AUTENTICAÇÃO
+app.post('/api/medical-record', authMiddleware, async (req, res) => {
   try {
     const { transcript, patientName, patientAge, patientGender, observations } = req.body;
 
@@ -285,8 +384,8 @@ Gere um prontuário médico completo e estruturado em formato Markdown com as se
   }
 });
 
-// Process consultation endpoint (with audio transcription support)
-app.post('/api/medical-record/process-consultation', async (req, res) => {
+// Process consultation endpoint (with audio transcription support) - COM AUTENTICAÇÃO
+app.post('/api/medical-record/process-consultation', authMiddleware, async (req, res) => {
   try {
     const { audioData, patientData } = req.body;
 
@@ -365,6 +464,124 @@ Gere um prontuário médico completo e estruturado em formato Markdown com as se
     res.status(500).json({
       success: false,
       error: 'Erro ao processar consulta',
+      message: error.message
+    });
+  }
+});
+
+// Endpoint para listar conversas do usuário - COM AUTENTICAÇÃO
+app.get('/api/conversations', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const limit = parseInt(req.query.limit) || 50;
+
+    const conversations = await conversationQueries.listByUser(userId, limit);
+
+    res.json({
+      success: true,
+      conversations: conversations
+    });
+
+  } catch (error) {
+    console.error('List conversations error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erro ao listar conversas',
+      message: error.message
+    });
+  }
+});
+
+// Endpoint para buscar uma conversa específica - COM VERIFICAÇÃO DE OWNERSHIP
+app.get('/api/conversations/:conversationId', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { conversationId } = req.params;
+
+    // Buscar conversa
+    const conversationResult = await pool.query(
+      'SELECT * FROM conversations WHERE id = $1',
+      [conversationId]
+    );
+
+    if (conversationResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Conversa não encontrada'
+      });
+    }
+
+    const conversation = conversationResult.rows[0];
+
+    // VERIFICAÇÃO DE OWNERSHIP - Critical Security Check
+    if (conversation.user_id !== userId) {
+      return res.status(403).json({
+        success: false,
+        error: 'Acesso negado: esta conversa não pertence a você'
+      });
+    }
+
+    // Buscar mensagens da conversa
+    const messages = await conversationQueries.getMessages(conversationId);
+
+    res.json({
+      success: true,
+      conversation: conversation,
+      messages: messages
+    });
+
+  } catch (error) {
+    console.error('Get conversation error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erro ao buscar conversa',
+      message: error.message
+    });
+  }
+});
+
+// Endpoint para deletar uma conversa - COM VERIFICAÇÃO DE OWNERSHIP
+app.delete('/api/conversations/:conversationId', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { conversationId } = req.params;
+
+    // Buscar conversa para verificar ownership
+    const conversationResult = await pool.query(
+      'SELECT * FROM conversations WHERE id = $1',
+      [conversationId]
+    );
+
+    if (conversationResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Conversa não encontrada'
+      });
+    }
+
+    const conversation = conversationResult.rows[0];
+
+    // VERIFICAÇÃO DE OWNERSHIP - Critical Security Check
+    if (conversation.user_id !== userId) {
+      return res.status(403).json({
+        success: false,
+        error: 'Acesso negado: você não pode deletar esta conversa'
+      });
+    }
+
+    // Deletar conversa (mensagens serão deletadas em cascata se configurado no banco)
+    await pool.query('DELETE FROM conversations WHERE id = $1', [conversationId]);
+
+    res.json({
+      success: true,
+      message: 'Conversa deletada com sucesso'
+    });
+
+  } catch (error) {
+    console.error('Delete conversation error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erro ao deletar conversa',
       message: error.message
     });
   }

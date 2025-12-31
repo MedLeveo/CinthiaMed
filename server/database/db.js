@@ -43,6 +43,29 @@ const initializeDatabase = async () => {
     // Testar conexão
     await pool.query('SELECT NOW()');
 
+    // Criar tabela conversations se não existir
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS conversations (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        title VARCHAR(255),
+        assistant_type VARCHAR(50) DEFAULT 'geral',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // Criar tabela messages se não existir
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS messages (
+        id SERIAL PRIMARY KEY,
+        conversation_id INTEGER NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
+        role VARCHAR(20) NOT NULL CHECK (role IN ('user', 'assistant', 'system')),
+        content TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
     // Criar tabela password_resets se não existir
     await pool.query(`
       CREATE TABLE IF NOT EXISTS password_resets (
@@ -56,6 +79,10 @@ const initializeDatabase = async () => {
     `);
 
     // Criar índices
+    await pool.query('CREATE INDEX IF NOT EXISTS idx_conversations_user_id ON conversations(user_id)');
+    await pool.query('CREATE INDEX IF NOT EXISTS idx_conversations_updated_at ON conversations(updated_at DESC)');
+    await pool.query('CREATE INDEX IF NOT EXISTS idx_messages_conversation_id ON messages(conversation_id)');
+    await pool.query('CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(created_at)');
     await pool.query('CREATE INDEX IF NOT EXISTS idx_password_resets_token ON password_resets(token)');
     await pool.query('CREATE INDEX IF NOT EXISTS idx_password_resets_user_id ON password_resets(user_id)');
     await pool.query('CREATE INDEX IF NOT EXISTS idx_password_resets_expires_at ON password_resets(expires_at)');

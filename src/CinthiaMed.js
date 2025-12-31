@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
+import rehypeSanitize from 'rehype-sanitize';
 import 'katex/dist/katex.min.css';
 import API_URL from './config/api';
 
@@ -1802,7 +1803,7 @@ Gere UMA pergunta de acompanhamento relevante e útil que eu possa fazer para ap
                       {msg.type === 'assistant' ? (
                         <ReactMarkdown
                           remarkPlugins={[remarkMath]}
-                          rehypePlugins={[rehypeKatex]}
+                          rehypePlugins={[rehypeKatex, rehypeSanitize]}
                           components={{
                             p: ({node, ...props}) => <p style={{marginBottom: '1em', margin: 0}} {...props} />,
                             code: ({node, inline, ...props}) => (
