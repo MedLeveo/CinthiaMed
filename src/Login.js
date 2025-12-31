@@ -556,10 +556,8 @@ const Login = ({ onLoginSuccess, onForgotPassword }) => {
               lineHeight: '1.5',
             }}>
               Ao criar sua conta, você concorda com nossos{' '}
-              <a
-                href="/terms-of-service"
-                target="_blank"
-                rel="noopener noreferrer"
+              <span
+                onClick={() => window.history.pushState({}, '', '/terms-of-service') || window.location.reload()}
                 style={{
                   color: '#8b5cf6',
                   cursor: 'pointer',
@@ -570,12 +568,10 @@ const Login = ({ onLoginSuccess, onForgotPassword }) => {
                 onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}
               >
                 Termos de Uso
-              </a>
+              </span>
               {' '}e confirma que leu nossa{' '}
-              <a
-                href="/privacy-policy"
-                target="_blank"
-                rel="noopener noreferrer"
+              <span
+                onClick={() => window.history.pushState({}, '', '/privacy-policy') || window.location.reload()}
                 style={{
                   color: '#8b5cf6',
                   cursor: 'pointer',
@@ -586,7 +582,7 @@ const Login = ({ onLoginSuccess, onForgotPassword }) => {
                 onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}
               >
                 Política de Privacidade
-              </a>
+              </span>
               .
             </p>
           </form>
