@@ -139,8 +139,22 @@ app.post('/api/auth/logout', (req, res) => {
   res.json({ message: 'Logout realizado' });
 });
 
+// Debug endpoint to check Google OAuth configuration
+app.get('/api/auth/google/debug', (req, res) => {
+  res.json({
+    client_id: process.env.GOOGLE_CLIENT_ID ? 'Set ✓' : 'Missing ✗',
+    client_secret: process.env.GOOGLE_CLIENT_SECRET ? 'Set ✓' : 'Missing ✗',
+    callback_url: process.env.GOOGLE_CALLBACK_URL || 'Not set',
+    frontend_url: process.env.FRONTEND_URL || 'Not set'
+  });
+});
+
 // Google OAuth - Redirect to Google
 app.get('/api/auth/google', (req, res) => {
+  // Log for debugging
+  console.log('Google OAuth initiated');
+  console.log('Callback URL:', process.env.GOOGLE_CALLBACK_URL);
+
   const googleAuthUrl = 'https://accounts.google.com/o/oauth2/v2/auth';
   const params = new URLSearchParams({
     client_id: process.env.GOOGLE_CLIENT_ID,
