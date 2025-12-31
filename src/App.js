@@ -4,6 +4,7 @@ import CinthiaMed from './CinthiaMed';
 import ForgotPassword from './ForgotPassword';
 import ResetPassword from './ResetPassword';
 import LoginTransition from './LoginTransition';
+import API_URL from './config/api';
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -68,7 +69,7 @@ const App = () => {
       if (token && userName && userEmail) {
         // Verificar se o token ainda é válido
         try {
-          const response = await fetch('http://localhost:5000/api/auth/verify', {
+          const response = await fetch(`${API_URL}/api/auth/verify`, {
             headers: {
               'Authorization': `Bearer ${token}`,
             },
@@ -108,7 +109,7 @@ const App = () => {
     const token = localStorage.getItem('authToken');
 
     try {
-      await fetch('http://localhost:5000/api/auth/logout', {
+      await fetch(`${API_URL}/api/auth/logout`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import API_URL from './config/api';
 
 const Login = ({ onLoginSuccess, onForgotPassword }) => {
   const [isLogin, setIsLogin] = useState(true); // true = login, false = cadastro
@@ -94,7 +95,7 @@ const Login = ({ onLoginSuccess, onForgotPassword }) => {
         ? { email, password }
         : { name, email, password };
 
-      const response = await fetch(`http://localhost:5000${endpoint}`, {
+      const response = await fetch(`${API_URL}${endpoint}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -123,7 +124,7 @@ const Login = ({ onLoginSuccess, onForgotPassword }) => {
 
   const handleGoogleLogin = () => {
     // Redirecionar para o endpoint do Google OAuth
-    window.location.href = 'http://localhost:5000/api/auth/google';
+    window.location.href = `${API_URL}/api/auth/google`;
   };
 
   return (

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import API_URL from './config/api';
 
 const CinthiaMed = ({ user, onLogout }) => {
   const [messages, setMessages] = useState([]);
@@ -523,7 +524,7 @@ const CinthiaMed = ({ user, onLogout }) => {
           'Emergência': 'emergencia'
         };
 
-        const response = await fetch('http://localhost:5000/api/chat', {
+        const response = await fetch(`${API_URL}/api/chat`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -882,7 +883,7 @@ const CinthiaMed = ({ user, onLogout }) => {
       console.log('📡 Enviando para análise com IA...');
       console.log('🎤 Etapa 1: Transcrevendo áudio com Whisper...');
 
-      const response = await fetch('http://localhost:5000/api/medical-record/process-consultation', {
+      const response = await fetch(`${API_URL}/api/medical-record/process-consultation`, {
         method: 'POST',
         body: formData
       });
