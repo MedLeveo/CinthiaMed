@@ -1616,7 +1616,7 @@ const CinthiaMed = ({ user, onLogout }) => {
               }}>
                 {conversations.length === 0
                   ? `Bem-vindo(a) à CinthiaMed, ${user?.name?.split(' ')[0] || 'Doutor(a)'}!`
-                  : `Que bom te ter de volta, ${user?.name?.split(' ')[0] || 'Doutor(a)'}!`
+                  : `Bem-vindo(a) de volta, ${user?.name?.split(' ')[0] || 'Doutor(a)'}!`
                 }
               </h1>
             </div>
