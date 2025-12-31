@@ -225,7 +225,7 @@ app.get('/api/auth/google', (req, res) => {
 // Chat endpoint - COM AUTENTICAÇÃO E VERIFICAÇÃO DE OWNERSHIP
 app.post('/api/chat', authMiddleware, async (req, res) => {
   try {
-    const { message, assistantType = 'geral', conversationId } = req.body;
+    const { message, assistantType = 'geral', conversationId, systemMessage } = req.body;
     const userId = req.user.userId; // Do JWT decodificado
 
     if (!message || message.trim() === '') {
@@ -263,12 +263,14 @@ app.post('/api/chat', authMiddleware, async (req, res) => {
         });
       }
 
-      // Recuperar mensagens da conversa
+      // Recuperar mensagens da conversa (EXCLUINDO system messages)
       const messages = await conversationQueries.getMessages(conversationId);
-      conversationHistory = messages.map(m => ({
-        role: m.role,
-        content: m.content
-      }));
+      conversationHistory = messages
+        .filter(m => m.role !== 'system') // Filtrar system messages antigas
+        .map(m => ({
+          role: m.role,
+          content: m.content
+        }));
 
       // Atualizar timestamp da conversa
       await pool.query(
@@ -284,9 +286,14 @@ app.post('/api/chat', authMiddleware, async (req, res) => {
       );
     }
 
+    // System message dinâmico baseado no contexto do frontend
+    // Se não for fornecido, usar o padrão
+    const defaultSystemMessage = 'Você é a CinthiaMed, uma assistente médica virtual altamente especializada e confiável. Base suas respostas em evidências científicas.';
+    const activeSystemMessage = systemMessage || defaultSystemMessage;
+
     // Gerar resposta com GPT
     const messages = [
-      { role: 'system', content: 'Você é a CinthiaMed, uma assistente médica virtual altamente especializada e confiável. Base suas respostas em evidências científicas.' },
+      { role: 'system', content: activeSystemMessage },
       ...conversationHistory,
       { role: 'user', content: message }
     ];
@@ -295,7 +302,7 @@ app.post('/api/chat', authMiddleware, async (req, res) => {
       model: 'gpt-4o',
       messages: messages,
       temperature: 0.7,
-      max_tokens: 2000
+      max_tokens: 3000 // Aumentado para suportar respostas mais detalhadas
     });
 
     const response = completion.choices[0].message.content;
@@ -310,6 +317,7 @@ app.post('/api/chat', authMiddleware, async (req, res) => {
       response: response,
       metadata: {
         model: 'gpt-4o',
+        context: assistantType,
         timestamp: new Date().toISOString()
       }
     });

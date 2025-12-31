@@ -5,6 +5,7 @@ import rehypeKatex from 'rehype-katex';
 import rehypeSanitize from 'rehype-sanitize';
 import 'katex/dist/katex.min.css';
 import API_URL from './config/api';
+import { getSystemPrompt, MENU_TO_CONTEXT } from './config/systemPrompts';
 
 const CinthiaMed = ({ user, onLogout }) => {
   const [messages, setMessages] = useState([]);
@@ -13,6 +14,7 @@ const CinthiaMed = ({ user, onLogout }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const [currentView, setCurrentView] = useState('chat'); // 'chat' ou 'recording'
   const [activeMenuAction, setActiveMenuAction] = useState('new'); // Para rastrear qual botão do menu está ativo
+  const [currentContext, setCurrentContext] = useState('chat'); // Contexto atual para system prompt
   const [isThinking, setIsThinking] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
 
@@ -615,12 +617,23 @@ Gere UMA pergunta de acompanhamento relevante e útil que eu possa fazer para ap
           'Emergência': 'emergencia'
         };
 
+        // Obter system prompt baseado no contexto atual
+        const systemMessage = getSystemPrompt(currentContext);
+
+        // Obter token de autenticação (authToken é o nome correto no localStorage)
+        const token = localStorage.getItem('authToken');
+
         const response = await fetch(`${API_URL}/api/chat`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
           body: JSON.stringify({
             message: userMessage,
-            assistantType: assistantTypeMap[selectedAssistant] || 'geral'
+            assistantType: assistantTypeMap[selectedAssistant] || currentContext,
+            conversationId: currentConversationId,
+            systemMessage: systemMessage // Enviar system prompt contextual
           })
         });
 
@@ -667,25 +680,41 @@ Gere UMA pergunta de acompanhamento relevante e útil que eu possa fazer para ap
   };
 
   const handleMenuClick = (action) => {
-    setActiveMenuAction(action); // Marcar qual ação do menu está ativa
-
-    if (action === 'recording') {
+    // Salvar conversa atual antes de trocar de contexto
+    if (messages.length > 0) {
       saveCurrentConversation();
+    }
+
+    // Atualizar contexto baseado na ação do menu
+    const newContext = MENU_TO_CONTEXT[action] || 'chat';
+    const previousContext = currentContext;
+
+    setActiveMenuAction(action);
+    setCurrentContext(newContext);
+
+    // Se mudou de contexto, limpar chat e criar nova sessão
+    if (newContext !== previousContext) {
+      setMessages([]);
+      setCurrentConversationId(null); // Força criação de nova conversa
+      setShowWelcomeMessage(false); // Esconder mensagem de boas-vindas
+    }
+
+    // Gerenciar views específicas
+    if (action === 'recording') {
       setCurrentView('recording');
     } else if (action === 'scores') {
-      saveCurrentConversation();
       setCurrentView('scores');
     } else if (action === 'calculator') {
-      // Abrir chat com assistente de calculadoras (sem mensagem automática)
-      if (currentView !== 'chat') {
-        setCurrentView('chat');
-      }
+      setCurrentView('chat');
       setSelectedAssistant('Calculadoras');
     } else if (action === 'new') {
+      // Nova conversa no mesmo contexto
       createNewConversation();
       setCurrentView('chat');
+    } else if (action === 'pediatric') {
+      setCurrentView('chat');
+      setSelectedAssistant('Pediatria');
     } else {
-      saveCurrentConversation();
       setCurrentView('chat');
     }
   };
