@@ -1610,23 +1610,14 @@ const CinthiaMed = ({ user, onLogout }) => {
                 fontSize: '28px',
                 fontWeight: '300',
                 color: '#e2e8f0',
-                marginBottom: '12px',
+                marginBottom: '20px',
                 letterSpacing: '-0.5px',
               }}>
-                Sua assistente médica com <span style={{
-                  background: 'linear-gradient(135deg, #8b5cf6, #ec4899)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  fontWeight: '600',
-                }}>Inteligência Artificial</span>
+                {conversations.length === 0
+                  ? `Bem-vindo(a) à CinthiaMed, ${user?.name?.split(' ')[0] || 'Doutor(a)'}!`
+                  : `Que bom te ter de volta, ${user?.name?.split(' ')[0] || 'Doutor(a)'}!`
+                }
               </h1>
-              <p style={{
-                fontSize: '16px',
-                color: '#64748b',
-                marginBottom: '50px',
-              }}>
-                Análise de exames, cálculo de doses, discussão de casos e muito mais.
-              </p>
             </div>
           ) : (
             <div style={{
