@@ -47,7 +47,7 @@ app.post('/api/auth/register', async (req, res) => {
 
     // Insert user
     const result = await pool.query(
-      'INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING id, name, email',
+      'INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3) RETURNING id, name, email',
       [name, email, hashedPassword]
     );
 
@@ -86,7 +86,7 @@ app.post('/api/auth/login', async (req, res) => {
     const user = result.rows[0];
 
     // Check password
-    const validPassword = await bcrypt.compare(password, user.password);
+    const validPassword = await bcrypt.compare(password, user.password_hash);
 
     if (!validPassword) {
       return res.status(401).json({ error: 'Email ou senha inválidos' });
