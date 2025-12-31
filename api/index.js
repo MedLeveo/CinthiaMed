@@ -85,6 +85,45 @@ app.use('/api', apiLimiter);
 // Cache de conversas em memória (temporário até migrar DB para Vercel)
 const conversationCache = new Map();
 
+/**
+ * Detecta se a mensagem é uma pergunta médica que se beneficiaria de evidências científicas
+ * @param {string} message - Mensagem do usuário
+ * @returns {boolean} True se deve buscar evidências
+ */
+function detectMedicalQuestion(message) {
+  const lowerMessage = message.toLowerCase();
+
+  // Palavras-chave que indicam necessidade de busca científica
+  const medicalKeywords = [
+    'tratamento', 'terapia', 'medicamento', 'droga', 'fármaco',
+    'diagnóstico', 'sintoma', 'doença', 'condição', 'patologia',
+    'estudo', 'pesquisa', 'evidência', 'artigo', 'publicação',
+    'protocolo', 'diretriz', 'guideline', 'recomendação',
+    'eficácia', 'efetivo', 'funciona', 'resultado',
+    'complicação', 'efeito colateral', 'reação adversa',
+    'prevenção', 'rastreio', 'screening',
+    'prognóstico', 'evolução', 'sobrevida',
+    'incidência', 'prevalência', 'epidemiologia'
+  ];
+
+  // Perguntas que indicam busca de conhecimento médico
+  const questionPatterns = [
+    'qual', 'quais', 'como', 'quando', 'onde', 'por que', 'porque',
+    'existe', 'há', 'tem', 'pode', 'deve', 'é recomendado',
+    'o que é', 'como tratar', 'como diagnosticar'
+  ];
+
+  // Verificar se contém palavra-chave médica
+  const hasMedicalKeyword = medicalKeywords.some(keyword => lowerMessage.includes(keyword));
+
+  // Verificar se é uma pergunta
+  const isQuestion = questionPatterns.some(pattern => lowerMessage.includes(pattern)) ||
+                     lowerMessage.includes('?');
+
+  // Buscar evidências se for uma pergunta médica ou mencionar termos médicos
+  return hasMedicalKeyword || (isQuestion && lowerMessage.length > 15);
+}
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
@@ -246,7 +285,40 @@ app.post('/api/chat', authMiddleware, async (req, res) => {
 
     // System message dinâmico baseado no contexto do frontend
     const defaultSystemMessage = 'Você é a CinthiaMed, uma assistente médica virtual altamente especializada e confiável. Base suas respostas em evidências científicas.';
-    const activeSystemMessage = systemMessage || defaultSystemMessage;
+    let activeSystemMessage = systemMessage || defaultSystemMessage;
+
+    // 🔬 BUSCA CIENTÍFICA AUTOMÁTICA
+    // Detectar se é uma pergunta médica que se beneficiaria de evidências
+    const shouldSearchEvidence = detectMedicalQuestion(message);
+    let evidenciasContext = '';
+
+    if (shouldSearchEvidence) {
+      try {
+        console.log(`🔬 Detectada pergunta médica. Buscando evidências para: "${message}"`);
+
+        // Importar serviço de busca científica
+        const { buscarEvidencias, formatarParaPrompt } = require('./services/scientificSearch');
+
+        // Buscar evidências (3 resultados por fonte para não sobrecarregar)
+        const resultados = await buscarEvidencias(message, 3);
+
+        // Se encontrou resultados, formatar para incluir no contexto
+        if (resultados.resumo.totalResultados > 0) {
+          evidenciasContext = formatarParaPrompt(resultados, 2); // Máximo 2 artigos por fonte
+
+          // Adicionar instruções ao system message
+          activeSystemMessage += `\n\n# EVIDÊNCIAS CIENTÍFICAS ATUALIZADAS\n\n${evidenciasContext}\n\n**INSTRUÇÕES IMPORTANTES:**\n- Use as evidências científicas fornecidas acima para fundamentar sua resposta\n- Cite os artigos quando apropriado (ex: "Segundo estudo publicado em [ano]...")\n- Se as evidências contradizerem seu conhecimento base, priorize as evidências\n- Sempre inclua links para os artigos ao final da resposta quando relevante\n- Mantenha tom profissional e baseado em evidências`;
+
+          console.log(`✅ ${resultados.resumo.totalResultados} evidências encontradas e adicionadas ao contexto`);
+        } else {
+          console.log(`⚠️ Nenhuma evidência encontrada, prosseguindo com conhecimento base`);
+        }
+      } catch (error) {
+        // Se busca falhar, continuar sem evidências (fail gracefully)
+        console.error('❌ Erro ao buscar evidências científicas:', error.message);
+        console.log('⚠️ Continuando sem evidências externas');
+      }
+    }
 
     // Gerar resposta com GPT
     const messages = [
@@ -284,7 +356,11 @@ app.post('/api/chat', authMiddleware, async (req, res) => {
       metadata: {
         model: 'gpt-4o',
         context: assistantType,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        evidenceUsed: shouldSearchEvidence && evidenciasContext.length > 0,
+        evidenceSources: shouldSearchEvidence && evidenciasContext.length > 0
+          ? ['Semantic Scholar', 'Europe PMC', 'ClinicalTrials.gov']
+          : []
       }
     });
 
