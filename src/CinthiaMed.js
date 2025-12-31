@@ -628,6 +628,17 @@ const CinthiaMed = ({ user, onLogout }) => {
     prevAssistantRef.current = selectedAssistant;
   }, [selectedAssistant, messages.length]);
 
+  // Auto-save conversation to recents 5 seconds after first message
+  useEffect(() => {
+    if (messages.length > 0 && currentConversationId) {
+      const timer = setTimeout(() => {
+        saveCurrentConversation();
+      }, 5000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [messages.length, currentConversationId]);
+
   // Funções da Calculadora Médica
   const calculateResult = (calculatorId, inputs) => {
     const calc = medicalCalculators.calculators[calculatorId];
