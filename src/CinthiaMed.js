@@ -1,4 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import 'katex/dist/katex.min.css';
 import API_URL from './config/api';
 
 const CinthiaMed = ({ user, onLogout }) => {
@@ -533,6 +537,37 @@ const CinthiaMed = ({ user, onLogout }) => {
     'Pediatria': 'Como posso ajudar com pediatria?'
   };
 
+  // Função para gerar pergunta de acompanhamento contextual
+  const generateFollowUpQuestion = async (userQuestion, aiResponse) => {
+    try {
+      const prompt = `Baseado nesta conversa:
+
+Usuário perguntou: "${userQuestion}"
+Resposta da IA: "${aiResponse.substring(0, 500)}..."
+
+Gere UMA pergunta de acompanhamento relevante e útil que eu possa fazer para aprofundar ou complementar este assunto. A pergunta deve ser direta, específica e relacionada ao contexto médico da conversa. Responda APENAS com a pergunta, sem explicações adicionais. A pergunta deve começar com: "Gostaria de ver"`;
+
+      const response = await fetch(`${API_URL}/api/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: prompt,
+          assistantType: 'geral'
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.response) {
+        return `\n\n---\n\n💡 **Sugestão:** ${data.response.trim()}`;
+      }
+      return '';
+    } catch (error) {
+      console.error('Erro ao gerar pergunta de acompanhamento:', error);
+      return '';
+    }
+  };
+
   const handleSendMessage = async () => {
     if (inputValue.trim()) {
       // Criar nova conversa se não existir
@@ -577,6 +612,10 @@ const CinthiaMed = ({ user, onLogout }) => {
           // Adicionar mensagem vazia que será preenchida com streaming
           const messageIndex = messages.length + 1; // +1 porque já adicionamos a mensagem do usuário
 
+          // Adicionar pergunta contextual ao final da resposta
+          const followUpQuestion = await generateFollowUpQuestion(userMessage, data.response);
+          const responseWithQuestion = data.response + '\n\n' + followUpQuestion;
+
           setMessages(prev => [...prev, {
             type: 'assistant',
             content: '',
@@ -586,7 +625,7 @@ const CinthiaMed = ({ user, onLogout }) => {
           }]);
 
           // Iniciar streaming do texto
-          await streamText(data.response, messageIndex, data.scientificSources);
+          await streamText(responseWithQuestion, messageIndex, data.scientificSources);
         } else {
           setMessages(prev => [...prev, {
             type: 'assistant',
@@ -1505,16 +1544,53 @@ const CinthiaMed = ({ user, onLogout }) => {
         {currentView === 'chat' ? (
           /* Chat Area */
           <>
-            {/* Header com botão de favoritar */}
+            {/* Header com botões de ação */}
             {messages.length > 0 && (
               <div style={{
                 padding: '16px 40px',
                 borderBottom: '1px solid #1e293b',
                 display: 'flex',
                 justifyContent: 'flex-end',
+                gap: '12px',
                 position: 'relative',
                 zIndex: 1,
               }}>
+                {/* Botão Nova Conversa */}
+                <button
+                  onClick={createNewConversation}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '10px 16px',
+                    backgroundColor: 'transparent',
+                    border: '1px solid #334155',
+                    borderRadius: '10px',
+                    color: '#94a3b8',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    transition: 'all 0.2s',
+                    fontFamily: "'Outfit', sans-serif",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = 'rgba(139, 92, 246, 0.1)';
+                    e.currentTarget.style.borderColor = '#8b5cf6';
+                    e.currentTarget.style.color = '#8b5cf6';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.borderColor = '#334155';
+                    e.currentTarget.style.color = '#94a3b8';
+                  }}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M12 5v14M5 12h14"/>
+                  </svg>
+                  Nova Conversa
+                </button>
+
+                {/* Botão Favoritar */}
                 <button
                   onClick={toggleFavorite}
                   style={{
@@ -1701,8 +1777,118 @@ const CinthiaMed = ({ user, onLogout }) => {
                       fontSize: '15px',
                       lineHeight: '1.6',
                     }}>
-                      {msg.type === 'assistant' ? formatAIResponse(msg.content) : msg.content}
+                      {msg.type === 'assistant' ? (
+                        <ReactMarkdown
+                          remarkPlugins={[remarkMath]}
+                          rehypePlugins={[rehypeKatex]}
+                          components={{
+                            p: ({node, ...props}) => <p style={{marginBottom: '1em', margin: 0}} {...props} />,
+                            code: ({node, inline, ...props}) => (
+                              inline ?
+                                <code style={{
+                                  backgroundColor: 'rgba(139, 92, 246, 0.2)',
+                                  padding: '2px 6px',
+                                  borderRadius: '4px',
+                                  fontSize: '14px'
+                                }} {...props} /> :
+                                <code style={{
+                                  display: 'block',
+                                  backgroundColor: '#1a1f2e',
+                                  padding: '12px',
+                                  borderRadius: '8px',
+                                  overflowX: 'auto',
+                                  fontSize: '14px',
+                                  marginBottom: '1em'
+                                }} {...props} />
+                            )
+                          }}
+                        >
+                          {msg.content}
+                        </ReactMarkdown>
+                      ) : msg.content}
                     </div>
+
+                    {/* Action Buttons - Only for assistant messages */}
+                    {msg.type === 'assistant' && (
+                      <div style={{
+                        display: 'flex',
+                        gap: '8px',
+                        marginTop: '8px',
+                        alignItems: 'center'
+                      }}>
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(msg.content);
+                            showToastMessage('Resposta copiada!');
+                          }}
+                          style={{
+                            padding: '6px 12px',
+                            backgroundColor: 'transparent',
+                            border: '1px solid #3a4152',
+                            borderRadius: '8px',
+                            color: '#94a3b8',
+                            fontSize: '12px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            transition: 'all 0.2s'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = '#3a4152';
+                            e.target.style.color = '#e2e8f0';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = 'transparent';
+                            e.target.style.color = '#94a3b8';
+                          }}
+                        >
+                          📋 Copiar
+                        </button>
+                        <button
+                          onClick={() => showToastMessage('Obrigado pelo feedback!')}
+                          style={{
+                            padding: '6px 10px',
+                            backgroundColor: 'transparent',
+                            border: '1px solid #3a4152',
+                            borderRadius: '8px',
+                            color: '#94a3b8',
+                            fontSize: '16px',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = '#3a4152';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = 'transparent';
+                          }}
+                        >
+                          👍
+                        </button>
+                        <button
+                          onClick={() => showToastMessage('Vamos melhorar!')}
+                          style={{
+                            padding: '6px 10px',
+                            backgroundColor: 'transparent',
+                            border: '1px solid #3a4152',
+                            borderRadius: '8px',
+                            color: '#94a3b8',
+                            fontSize: '16px',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = '#3a4152';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = 'transparent';
+                          }}
+                        >
+                          👎
+                        </button>
+                      </div>
+                    )}
 
                     {/* Scientific Sources */}
                     {msg.sources && msg.sources.length > 0 && (
