@@ -4,6 +4,8 @@ import CinthiaMed from './CinthiaMed';
 import ForgotPassword from './ForgotPassword';
 import ResetPassword from './ResetPassword';
 import LoginTransition from './LoginTransition';
+import TermsOfService from './TermsOfService';
+import PrivacyPolicy from './PrivacyPolicy';
 import API_URL from './config/api';
 
 const App = () => {
@@ -16,16 +18,14 @@ const App = () => {
   // Verificar se há token salvo ao carregar
   useEffect(() => {
     const checkAuth = async () => {
-      // Verificar se há token nos parâmetros da URL (Google OAuth redirect)
+      // Verificar se há erros nos parâmetros da URL
       const urlParams = new URLSearchParams(window.location.search);
-      const tokenFromUrl = urlParams.get('token');
-      const nameFromUrl = urlParams.get('name');
-      const emailFromUrl = urlParams.get('email');
       const errorFromUrl = urlParams.get('error');
 
       // Verificar se está na rota de reset de senha
       const pathname = window.location.pathname;
-      if (pathname === '/reset-password' && tokenFromUrl) {
+      const resetToken = urlParams.get('token');
+      if (pathname === '/reset-password' && resetToken) {
         setCurrentView('reset-password');
         setLoading(false);
         return;
@@ -33,6 +33,18 @@ const App = () => {
 
       if (pathname === '/forgot-password') {
         setCurrentView('forgot-password');
+        setLoading(false);
+        return;
+      }
+
+      if (pathname === '/terms-of-service') {
+        setCurrentView('terms-of-service');
+        setLoading(false);
+        return;
+      }
+
+      if (pathname === '/privacy-policy') {
+        setCurrentView('privacy-policy');
         setLoading(false);
         return;
       }
@@ -45,22 +57,8 @@ const App = () => {
         return;
       }
 
-      if (tokenFromUrl && nameFromUrl && emailFromUrl) {
-        // Salvar token do Google OAuth
-        localStorage.setItem('authToken', tokenFromUrl);
-        localStorage.setItem('userName', decodeURIComponent(nameFromUrl));
-        localStorage.setItem('userEmail', decodeURIComponent(emailFromUrl));
-        const userData = {
-          name: decodeURIComponent(nameFromUrl),
-          email: decodeURIComponent(emailFromUrl)
-        };
-        setUser(userData);
-        setShowTransition(true);
-        // Limpar parâmetros da URL
-        window.history.replaceState({}, document.title, '/');
-        setLoading(false);
-        return;
-      }
+      // Google OAuth now sets localStorage directly via HTML page
+      // No need to extract tokens from URL parameters (security improvement)
 
       const token = localStorage.getItem('authToken');
       const userName = localStorage.getItem('userName');
@@ -219,6 +217,12 @@ const App = () => {
             }}
           />
         );
+
+      case 'terms-of-service':
+        return <TermsOfService />;
+
+      case 'privacy-policy':
+        return <PrivacyPolicy />;
 
       default:
         return (

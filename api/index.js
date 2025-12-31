@@ -505,8 +505,61 @@ app.get('/api/auth/google/callback', async (req, res) => {
       { expiresIn: '24h' }
     );
 
-    // Redirect to frontend with token
-    res.redirect(`${process.env.FRONTEND_URL}?token=${token}&user=${encodeURIComponent(JSON.stringify({ name: user.name, email: user.email }))}`);
+    // Renderizar HTML com auto-submit form (evita token na URL)
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Autenticando...</title>
+          <style>
+            body {
+              background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              height: 100vh;
+              margin: 0;
+              font-family: 'Outfit', sans-serif;
+              color: #e2e8f0;
+            }
+            .loader {
+              text-align: center;
+            }
+            .spinner {
+              border: 3px solid rgba(139, 92, 246, 0.3);
+              border-top-color: #8b5cf6;
+              border-radius: 50%;
+              width: 50px;
+              height: 50px;
+              animation: spin 1s linear infinite;
+              margin: 0 auto 20px;
+            }
+            @keyframes spin {
+              to { transform: rotate(360deg); }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="loader">
+            <div class="spinner"></div>
+            <p>Autenticando com Google...</p>
+          </div>
+          <form id="authForm" action="${process.env.FRONTEND_URL}/oauth-callback" method="POST" style="display:none;">
+            <input type="hidden" name="token" value="${token}" />
+            <input type="hidden" name="name" value="${user.name}" />
+            <input type="hidden" name="email" value="${user.email}" />
+          </form>
+          <script>
+            // Auto-submit via localStorage (mais seguro que query params)
+            localStorage.setItem('authToken', '${token}');
+            localStorage.setItem('userName', '${user.name}');
+            localStorage.setItem('userEmail', '${user.email}');
+            window.location.href = '${process.env.FRONTEND_URL}';
+          </script>
+        </body>
+      </html>
+    `;
+    res.send(html);
 
   } catch (error) {
     console.error('Google OAuth error:', error);

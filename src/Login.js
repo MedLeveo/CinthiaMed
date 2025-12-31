@@ -548,25 +548,47 @@ const Login = ({ onLoginSuccess, onForgotPassword }) => {
             </button>
 
             {/* Terms */}
-            {!isLogin && (
-              <p style={{
-                marginTop: '20px',
-                fontSize: '12px',
-                color: '#64748b',
-                textAlign: 'center',
-                lineHeight: '1.5',
-              }}>
-                Ao continuar, você{' '}
-                <span style={{ color: '#8b5cf6', cursor: 'pointer' }}>
-                  Concorda com os Termos
-                </span>
-                {' '}do consumidor da CinthiaMed e reconhece sua{' '}
-                <span style={{ color: '#8b5cf6', cursor: 'pointer' }}>
-                  Política de Privacidade
-                </span>
-                .
-              </p>
-            )}
+            <p style={{
+              marginTop: '20px',
+              fontSize: '12px',
+              color: '#64748b',
+              textAlign: 'center',
+              lineHeight: '1.5',
+            }}>
+              Ao criar sua conta, você concorda com nossos{' '}
+              <a
+                href="/terms-of-service"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  color: '#8b5cf6',
+                  cursor: 'pointer',
+                  textDecoration: 'none',
+                  fontWeight: '500'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'}
+                onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}
+              >
+                Termos de Uso
+              </a>
+              {' '}e confirma que leu nossa{' '}
+              <a
+                href="/privacy-policy"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  color: '#8b5cf6',
+                  cursor: 'pointer',
+                  textDecoration: 'none',
+                  fontWeight: '500'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'}
+                onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}
+              >
+                Política de Privacidade
+              </a>
+              .
+            </p>
           </form>
         </div>
       </div>
