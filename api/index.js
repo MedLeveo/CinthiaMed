@@ -4,8 +4,14 @@ import cors from 'cors';
 import pg from 'pg';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import OpenAI from 'openai';
 
 const { Pool } = pg;
+
+// Initialize OpenAI
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
 
 const app = express();
 
@@ -146,6 +152,137 @@ app.get('/api/auth/google', (req, res) => {
   });
 
   res.redirect(`${googleAuthUrl}?${params.toString()}`);
+});
+
+// Cache simples em memória para conversas
+const conversationCache = new Map();
+
+// Chat endpoint
+app.post('/api/chat', async (req, res) => {
+  try {
+    const { message, assistantType = 'geral', conversationId } = req.body;
+
+    if (!message || message.trim() === '') {
+      return res.status(400).json({
+        success: false,
+        error: 'Mensagem não pode estar vazia'
+      });
+    }
+
+    // Recuperar histórico da conversa
+    let conversationHistory = [];
+    if (conversationId && conversationCache.has(conversationId)) {
+      conversationHistory = conversationCache.get(conversationId);
+    }
+
+    // Gerar resposta com GPT
+    const messages = [
+      { role: 'system', content: 'Você é a CinthiaMed, uma assistente médica virtual altamente especializada e confiável. Base suas respostas em evidências científicas.' },
+      ...conversationHistory,
+      { role: 'user', content: message }
+    ];
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o',
+      messages: messages,
+      temperature: 0.7,
+      max_tokens: 2000
+    });
+
+    const response = completion.choices[0].message.content;
+
+    // Atualizar histórico da conversa
+    const newConversationId = conversationId || `conv_${Date.now()}`;
+    conversationHistory.push(
+      { role: 'user', content: message },
+      { role: 'assistant', content: response }
+    );
+    conversationCache.set(newConversationId, conversationHistory);
+
+    // Limpar cache antigo (manter apenas últimas 100 conversas)
+    if (conversationCache.size > 100) {
+      const firstKey = conversationCache.keys().next().value;
+      conversationCache.delete(firstKey);
+    }
+
+    res.json({
+      success: true,
+      conversationId: newConversationId,
+      response: response,
+      metadata: {
+        model: 'gpt-4o',
+        timestamp: new Date().toISOString()
+      }
+    });
+
+  } catch (error) {
+    console.error('Chat error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erro ao processar mensagem',
+      message: error.message
+    });
+  }
+});
+
+// Medical record analysis endpoint
+app.post('/api/medical-record', async (req, res) => {
+  try {
+    const { transcript, patientName, patientAge, patientGender, observations } = req.body;
+
+    if (!transcript || transcript.trim() === '') {
+      return res.status(400).json({
+        success: false,
+        error: 'Transcrição não pode estar vazia'
+      });
+    }
+
+    const prompt = `Analise a seguinte consulta médica e gere um prontuário estruturado:
+
+Paciente: ${patientName || 'Não informado'}
+Idade: ${patientAge || 'Não informada'}
+Sexo: ${patientGender || 'Não informado'}
+Observações: ${observations || 'Nenhuma'}
+
+Transcrição da consulta:
+${transcript}
+
+Gere um prontuário médico completo e estruturado em formato Markdown com as seguintes seções:
+## Identificação do Paciente
+## Anamnese
+## Exame Físico
+## Hipóteses Diagnósticas
+## Conduta / Plano Terapêutico
+## Observações`;
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o',
+      messages: [
+        { role: 'system', content: 'Você é um médico especialista em elaborar prontuários médicos detalhados e bem estruturados.' },
+        { role: 'user', content: prompt }
+      ],
+      temperature: 0.3,
+      max_tokens: 3000
+    });
+
+    const report = completion.choices[0].message.content;
+
+    res.json({
+      success: true,
+      report: report,
+      metadata: {
+        timestamp: new Date().toISOString()
+      }
+    });
+
+  } catch (error) {
+    console.error('Medical record error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erro ao gerar prontuário',
+      message: error.message
+    });
+  }
 });
 
 // Google OAuth Callback
