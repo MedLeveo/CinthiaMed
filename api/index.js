@@ -10,7 +10,7 @@ const { Pool } = pg;
 
 // Initialize OpenAI
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
+  apiKey: process.env.OPENAI_API_KEY?.replace(/\s+/g, '') || ''
 });
 
 const app = express();
