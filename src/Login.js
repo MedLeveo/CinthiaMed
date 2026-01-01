@@ -136,6 +136,21 @@ const Login = ({ onLoginSuccess, onForgotPassword, onTermsClick, onPrivacyClick 
         throw new Error(data.error || 'Erro ao processar solicitação');
       }
 
+      // Verificar se é cadastro que requer verificação de email
+      if (!isLogin && data.requiresVerification) {
+        // Mostrar mensagem de sucesso e instruções
+        setError(''); // Limpar erros
+        alert(`✅ ${data.message}\n\n📧 Um email de verificação foi enviado para ${data.email}.\n\nPor favor, verifique sua caixa de entrada e clique no link para ativar sua conta.`);
+        // Mudar para tela de login
+        setIsLogin(true);
+        setEmail('');
+        setPassword('');
+        setConfirmPassword('');
+        setName('');
+        return;
+      }
+
+      // Login normal ou registro sem verificação (Google OAuth)
       // Salvar token no localStorage
       localStorage.setItem('authToken', data.token);
       localStorage.setItem('userName', data.user.name);

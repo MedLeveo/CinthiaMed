@@ -39,14 +39,19 @@ const getBrevoTransporter = () => {
  */
 async function sendVerificationEmail(email, name, verificationToken) {
   try {
+    console.log('🔍 [EMAIL DEBUG] Iniciando sendVerificationEmail...');
+    console.log('🔍 [EMAIL DEBUG] BREVO_API_KEY existe?', !!process.env.BREVO_API_KEY);
+    console.log('🔍 [EMAIL DEBUG] BREVO_API_KEY primeiros chars:', process.env.BREVO_API_KEY?.substring(0, 10));
+
     const transporter = getBrevoTransporter();
 
     if (!transporter) {
-      console.log('⚠️ Email de verificação não enviado (BREVO_API_KEY não configurada)');
+      console.error('❌ [EMAIL DEBUG] Transporter é NULL - BREVO_API_KEY não configurada');
       return null;
     }
 
     console.log(`📧 Enviando email de verificação para: ${email}`);
+    console.log('🔍 [EMAIL DEBUG] Token de verificação:', verificationToken.substring(0, 10) + '...');
 
     const frontendUrl = process.env.FRONTEND_URL || 'https://cinthiamed.vercel.app';
     const verifyUrl = `${frontendUrl}/verify-email?token=${verificationToken}`;
@@ -180,9 +185,16 @@ async function sendVerificationEmail(email, name, verificationToken) {
 
     console.log('✅ Email de verificação enviado com sucesso para:', email);
     console.log('📧 Message ID:', info.messageId);
+    console.log('🔍 [EMAIL DEBUG] Resposta completa do SMTP:', JSON.stringify(info, null, 2));
     return info;
   } catch (error) {
-    console.error('❌ Erro ao enviar email de verificação:', error);
+    console.error('❌ [EMAIL DEBUG] Erro ao enviar email de verificação');
+    console.error('❌ [EMAIL DEBUG] Tipo do erro:', error.constructor.name);
+    console.error('❌ [EMAIL DEBUG] Mensagem:', error.message);
+    console.error('❌ [EMAIL DEBUG] Stack:', error.stack);
+    if (error.response) {
+      console.error('❌ [EMAIL DEBUG] Resposta SMTP:', error.response);
+    }
     // Não lançar erro - falha no email não deve impedir cadastro
     return null;
   }
