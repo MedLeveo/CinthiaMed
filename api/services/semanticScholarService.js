@@ -9,7 +9,7 @@
  * - Recomendado: 1 req/segundo para segurança
  */
 
-const axios = require('axios');
+import axios from 'axios';
 
 const SEMANTIC_SCHOLAR_API_BASE = 'https://api.semanticscholar.org/graph/v1';
 
@@ -126,7 +126,7 @@ async function getPaperById(paperId) {
   }
 }
 
-module.exports = {
+export {
   searchPapers,
   getPaperById
 };

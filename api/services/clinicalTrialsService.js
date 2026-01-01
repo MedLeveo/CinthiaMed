@@ -10,7 +10,7 @@
  * - Para segurança: 1 req/segundo
  */
 
-const axios = require('axios');
+import axios from 'axios';
 
 const CLINICAL_TRIALS_API_BASE = 'https://clinicaltrials.gov/api/v2/studies';
 
@@ -220,7 +220,7 @@ async function searchByIntervention(intervention, pageSize = 10) {
   return searchTrials(`AREA[InterventionName]${intervention}`, pageSize);
 }
 
-module.exports = {
+export {
   searchTrials,
   getTrialById,
   searchByCondition,

@@ -7,9 +7,9 @@
  * - ClinicalTrials.gov (ensaios clínicos)
  */
 
-const semanticScholarService = require('./semanticScholarService');
-const europePmcService = require('./europePmcService');
-const clinicalTrialsService = require('./clinicalTrialsService');
+import * as semanticScholarService from './semanticScholarService.js';
+import * as europePmcService from './europePmcService.js';
+import * as clinicalTrialsService from './clinicalTrialsService.js';
 
 /**
  * Busca evidências científicas em múltiplas fontes simultaneamente
@@ -228,7 +228,7 @@ function obterEstatisticas(resultados) {
   return stats;
 }
 
-module.exports = {
+export {
   buscarEvidencias,
   formatarParaPrompt,
   obterEstatisticas

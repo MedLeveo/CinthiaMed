@@ -11,7 +11,7 @@
  * - Evitar mais de 1000 requisições por hora
  */
 
-const axios = require('axios');
+import axios from 'axios';
 
 const EUROPE_PMC_API_BASE = 'https://www.ebi.ac.uk/europepmc/webservices/rest';
 
@@ -177,7 +177,7 @@ async function getPaperById(id, source = 'MED') {
   }
 }
 
-module.exports = {
+export {
   searchPapers,
   getPaperById
 };

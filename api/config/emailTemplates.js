@@ -9,7 +9,7 @@
  * - Mantenha a estrutura do CSS para design consistente
  */
 
-module.exports = {
+export default {
   /**
    * Configurações globais de email
    */

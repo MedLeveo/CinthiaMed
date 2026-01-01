@@ -8,8 +8,8 @@
  * Templates personalizáveis em: api/config/emailTemplates.js
  */
 
-const nodemailer = require('nodemailer');
-const templates = require('../config/emailTemplates');
+import nodemailer from 'nodemailer';
+import templates from '../config/emailTemplates.js';
 
 // Criar transporter do Brevo (Sendinblue) SMTP
 const getBrevoTransporter = () => {
@@ -496,7 +496,7 @@ async function sendPasswordResetEmail(email, resetToken) {
   }
 }
 
-module.exports = {
+export {
   sendVerificationEmail,
   sendWelcomeEmail,
   sendPasswordResetEmail

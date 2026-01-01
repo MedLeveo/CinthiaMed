@@ -6,6 +6,9 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import OpenAI from 'openai';
 import rateLimit from 'express-rate-limit';
+import crypto from 'crypto';
+import { sendVerificationEmail, sendWelcomeEmail } from './services/emailService.js';
+import { buscarEvidencias, formatarParaPrompt } from './services/scientificSearch.js';
 
 const { Pool } = pg;
 
@@ -15,6 +18,9 @@ const openai = new OpenAI({
 });
 
 const app = express();
+
+// Trust proxy - necessário para Vercel/proxies reversos
+app.set('trust proxy', 1);
 
 // Database connection
 const pool = new Pool({
@@ -154,7 +160,6 @@ app.post('/api/auth/register', registerLimiter, async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 12);
 
     // Gerar token de verificação de email (válido por 24 horas)
-    const crypto = require('crypto');
     const verificationToken = crypto.randomBytes(32).toString('hex');
     const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 horas
 
@@ -169,7 +174,6 @@ app.post('/api/auth/register', registerLimiter, async (req, res) => {
     const user = result.rows[0];
 
     // 📧 Enviar email de VERIFICAÇÃO (não de boas-vindas)
-    const { sendVerificationEmail } = require('./services/emailService');
     sendVerificationEmail(user.email, user.name, verificationToken).catch(error => {
       console.error('⚠️ Falha ao enviar email de verificação (não bloqueante):', error.message);
     });
@@ -295,7 +299,6 @@ app.post('/api/auth/verify-email', async (req, res) => {
     );
 
     // 📧 Enviar email de boas-vindas AGORA (após verificação)
-    const { sendWelcomeEmail } = require('./services/emailService');
     sendWelcomeEmail(user.email, user.name).catch(error => {
       console.error('⚠️ Falha ao enviar email de boas-vindas (não bloqueante):', error.message);
     });
@@ -373,9 +376,6 @@ app.post('/api/chat', authMiddleware, async (req, res) => {
     if (shouldSearchEvidence) {
       try {
         console.log(`🔬 Detectada pergunta médica. Buscando evidências para: "${message}"`);
-
-        // Importar serviço de busca científica
-        const { buscarEvidencias, formatarParaPrompt } = require('./services/scientificSearch');
 
         // Buscar evidências (3 resultados por fonte para não sobrecarregar)
         const resultados = await buscarEvidencias(message, 3);
