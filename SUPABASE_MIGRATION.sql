@@ -69,7 +69,7 @@ SELECT
     is_nullable,
     column_default
 FROM information_schema.columns
-WHERE table_name = 'users'
+WHERE table_name = 'users
 AND column_name IN (
     'email_verified',
     'verification_token',

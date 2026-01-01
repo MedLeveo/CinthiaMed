@@ -6,6 +6,7 @@ import ResetPassword from './ResetPassword';
 import LoginTransition from './LoginTransition';
 import TermsOfService from './TermsOfService';
 import PrivacyPolicy from './PrivacyPolicy';
+import VerifyEmail from './VerifyEmail';
 import API_URL from './config/api';
 
 const App = () => {
@@ -45,6 +46,12 @@ const App = () => {
 
       if (pathname === '/privacy-policy') {
         setCurrentView('privacy-policy');
+        setLoading(false);
+        return;
+      }
+
+      if (pathname === '/verify-email') {
+        setCurrentView('verify-email');
         setLoading(false);
         return;
       }
@@ -223,6 +230,9 @@ const App = () => {
 
       case 'privacy-policy':
         return <PrivacyPolicy />;
+
+      case 'verify-email':
+        return <VerifyEmail />;
 
       default:
         return (

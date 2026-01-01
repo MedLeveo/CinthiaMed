@@ -153,30 +153,32 @@ app.post('/api/auth/register', registerLimiter, async (req, res) => {
     // Hash password com 12 rounds (mais seguro)
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Insert user
+    // Gerar token de verificação de email (válido por 24 horas)
+    const crypto = require('crypto');
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 horas
+
+    // Insert user com email_verified = FALSE
     const result = await pool.query(
-      'INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3) RETURNING id, name, email',
-      [name, email, hashedPassword]
+      `INSERT INTO users (name, email, password_hash, email_verified, verification_token, verification_token_expires)
+       VALUES ($1, $2, $3, FALSE, $4, $5)
+       RETURNING id, name, email`,
+      [name, email, hashedPassword, verificationToken, verificationExpires]
     );
 
     const user = result.rows[0];
 
-    // Generate token
-    const token = jwt.sign(
-      { userId: user.id, email: user.email },
-      process.env.SESSION_SECRET || 'fallback-secret',
-      { expiresIn: '24h' }
-    );
-
-    // 📧 Enviar email de boas-vindas (não bloqueia resposta)
-    const { sendWelcomeEmail } = require('./services/emailService');
-    sendWelcomeEmail(user.email, user.name).catch(error => {
-      console.error('⚠️ Falha ao enviar email de boas-vindas (não bloqueante):', error.message);
+    // 📧 Enviar email de VERIFICAÇÃO (não de boas-vindas)
+    const { sendVerificationEmail } = require('./services/emailService');
+    sendVerificationEmail(user.email, user.name, verificationToken).catch(error => {
+      console.error('⚠️ Falha ao enviar email de verificação (não bloqueante):', error.message);
     });
 
+    // NÃO gerar token JWT ainda - usuário precisa verificar o email primeiro
     res.json({
-      user: { name: user.name, email: user.email },
-      token
+      message: 'Conta criada com sucesso! Verifique seu email para ativar sua conta.',
+      email: user.email,
+      requiresVerification: true
     });
 
   } catch (error) {
@@ -209,6 +211,15 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
 
     if (!validPassword) {
       return res.status(401).json({ error: 'Email ou senha inválidos' });
+    }
+
+    // 🔒 VERIFICAR SE O EMAIL FOI VERIFICADO
+    if (!user.email_verified) {
+      return res.status(403).json({
+        error: 'Email não verificado',
+        message: 'Por favor, verifique seu email antes de fazer login. Cheque sua caixa de entrada.',
+        requiresVerification: true
+      });
     }
 
     // Generate token
@@ -244,6 +255,67 @@ app.get('/api/auth/verify', async (req, res) => {
 
   } catch (error) {
     res.status(401).json({ error: 'Token inválido' });
+  }
+});
+
+// Verificar email (validar token de verificação)
+app.post('/api/auth/verify-email', async (req, res) => {
+  try {
+    const { token } = req.body;
+
+    if (!token) {
+      return res.status(400).json({ error: 'Token de verificação não fornecido' });
+    }
+
+    // Buscar usuário pelo token de verificação
+    const result = await pool.query(
+      'SELECT id, name, email, verification_token_expires FROM users WHERE verification_token = $1',
+      [token]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(400).json({ error: 'Token de verificação inválido' });
+    }
+
+    const user = result.rows[0];
+
+    // Verificar se o token expirou
+    if (new Date() > new Date(user.verification_token_expires)) {
+      return res.status(400).json({ error: 'Token de verificação expirado. Solicite um novo email de verificação.' });
+    }
+
+    // Marcar usuário como verificado e limpar token
+    await pool.query(
+      `UPDATE users
+       SET email_verified = TRUE,
+           verification_token = NULL,
+           verification_token_expires = NULL
+       WHERE id = $1`,
+      [user.id]
+    );
+
+    // 📧 Enviar email de boas-vindas AGORA (após verificação)
+    const { sendWelcomeEmail } = require('./services/emailService');
+    sendWelcomeEmail(user.email, user.name).catch(error => {
+      console.error('⚠️ Falha ao enviar email de boas-vindas (não bloqueante):', error.message);
+    });
+
+    // Gerar token JWT para login automático
+    const authToken = jwt.sign(
+      { userId: user.id, email: user.email },
+      process.env.SESSION_SECRET || 'fallback-secret',
+      { expiresIn: '24h' }
+    );
+
+    res.json({
+      message: 'Email verificado com sucesso! Você já pode fazer login.',
+      user: { name: user.name, email: user.email },
+      token: authToken
+    });
+
+  } catch (error) {
+    console.error('Verify email error:', error);
+    res.status(500).json({ error: 'Erro ao verificar email' });
   }
 });
 
@@ -565,16 +637,16 @@ app.get('/api/auth/google/callback', async (req, res) => {
 
     let user;
     if (result.rows.length === 0) {
-      // Create new user
+      // Create new user - Google OAuth users são sempre verificados
       result = await pool.query(
-        'INSERT INTO users (name, email, google_id, avatar_url) VALUES ($1, $2, $3, $4) RETURNING id, name, email',
+        'INSERT INTO users (name, email, google_id, avatar_url, email_verified) VALUES ($1, $2, $3, $4, TRUE) RETURNING id, name, email',
         [googleUser.name, googleUser.email, googleUser.id, googleUser.picture]
       );
       user = result.rows[0];
     } else {
-      // Update existing user
+      // Update existing user - marcar como verificado se veio do Google
       result = await pool.query(
-        'UPDATE users SET google_id = $1, avatar_url = $2, last_login = NOW() WHERE email = $3 RETURNING id, name, email',
+        'UPDATE users SET google_id = $1, avatar_url = $2, email_verified = TRUE, last_login = NOW() WHERE email = $3 RETURNING id, name, email',
         [googleUser.id, googleUser.picture, googleUser.email]
       );
       user = result.rows[0];
