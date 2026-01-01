@@ -35,7 +35,161 @@ const getBrevoTransporter = () => {
 };
 
 /**
- * Envia email de boas-vindas para novo usuário
+ * Envia email de verificação para novo usuário
+ */
+async function sendVerificationEmail(email, name, verificationToken) {
+  try {
+    const transporter = getBrevoTransporter();
+
+    if (!transporter) {
+      console.log('⚠️ Email de verificação não enviado (BREVO_API_KEY não configurada)');
+      return null;
+    }
+
+    console.log(`📧 Enviando email de verificação para: ${email}`);
+
+    const frontendUrl = process.env.FRONTEND_URL || 'https://cinthiamed.vercel.app';
+    const verifyUrl = `${frontendUrl}/verify-email?token=${verificationToken}`;
+
+    const tpl = templates.emailVerification;
+    const cfg = templates.config;
+
+    const info = await transporter.sendMail({
+      from: `"${cfg.fromName}" <${cfg.fromEmail}>`,
+      to: email,
+      subject: tpl.subject,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body {
+              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+              background: linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #1e1b4b 100%);
+              margin: 0;
+              padding: 40px 20px;
+            }
+            .container {
+              max-width: 600px;
+              margin: 0 auto;
+              background: linear-gradient(145deg, #1a1f2e 0%, #16213e 100%);
+              border-radius: 24px;
+              padding: 48px;
+              box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+              border: 1px solid #2a3142;
+            }
+            .logo {
+              width: 80px;
+              height: 80px;
+              margin: 0 auto 20px;
+              background: linear-gradient(135deg, #8b5cf6, #ec4899);
+              border-radius: 20px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 36px;
+              box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);
+            }
+            h1 {
+              color: #e2e8f0;
+              font-size: 28px;
+              font-weight: 700;
+              margin: 0 0 16px 0;
+              text-align: center;
+            }
+            p {
+              color: #94a3b8;
+              font-size: 16px;
+              line-height: 1.6;
+              margin: 0 0 24px 0;
+              text-align: center;
+            }
+            .highlight {
+              color: #8b5cf6;
+              font-weight: 600;
+            }
+            .button {
+              display: inline-block;
+              padding: 16px 32px;
+              background: linear-gradient(135deg, #8b5cf6, #ec4899);
+              color: #ffffff;
+              text-decoration: none;
+              border-radius: 12px;
+              font-weight: 600;
+              font-size: 16px;
+              box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+              margin: 20px 0;
+            }
+            .button-container {
+              text-align: center;
+            }
+            .info-box {
+              background: rgba(139, 92, 246, 0.1);
+              border: 1px solid rgba(139, 92, 246, 0.3);
+              border-radius: 12px;
+              padding: 20px;
+              margin: 24px 0;
+            }
+            .info-box p {
+              color: #a78bfa;
+              font-size: 14px;
+              margin: 0;
+              text-align: left;
+            }
+            .footer {
+              color: #64748b;
+              font-size: 12px;
+              text-align: center;
+              margin-top: 32px;
+              padding-top: 24px;
+              border-top: 1px solid #2a3142;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="logo">${tpl.logoEmoji}</div>
+            <h1>${tpl.title}</h1>
+            <p>${tpl.greeting(name)}</p>
+            <p>${tpl.intro}</p>
+            <p>${tpl.instructions}</p>
+
+            <div class="button-container">
+              <a href="${verifyUrl}" class="button">${tpl.buttonText}</a>
+            </div>
+
+            <div class="info-box">
+              <p><strong>${tpl.expirationWarning.title}</strong></p>
+              <p>${tpl.expirationWarning.description}</p>
+            </div>
+
+            <p style="font-size: 14px; color: #64748b;">
+              ${tpl.securityNote}
+            </p>
+
+            <div class="footer">
+              <p>${tpl.footer.line1}</p>
+              <p>${tpl.footer.line2}</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+    });
+
+    console.log('✅ Email de verificação enviado com sucesso para:', email);
+    console.log('📧 Message ID:', info.messageId);
+    return info;
+  } catch (error) {
+    console.error('❌ Erro ao enviar email de verificação:', error);
+    // Não lançar erro - falha no email não deve impedir cadastro
+    return null;
+  }
+}
+
+/**
+ * Envia email de boas-vindas (após verificação)
  */
 async function sendWelcomeEmail(email, name) {
   try {
@@ -127,6 +281,21 @@ async function sendWelcomeEmail(email, name) {
             .feature-list li:last-child {
               border-bottom: none;
             }
+            .button {
+              display: inline-block;
+              padding: 16px 32px;
+              background: linear-gradient(135deg, #8b5cf6, #ec4899);
+              color: #ffffff;
+              text-decoration: none;
+              border-radius: 12px;
+              font-weight: 600;
+              font-size: 16px;
+              box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+              margin: 20px 0;
+            }
+            .button-container {
+              text-align: center;
+            }
             .footer {
               color: #64748b;
               font-size: 12px;
@@ -154,6 +323,10 @@ async function sendWelcomeEmail(email, name) {
             </div>
 
             <p>${tpl.closing}</p>
+
+            <div class="button-container">
+              <a href="${process.env.FRONTEND_URL || 'https://cinthiamed.vercel.app'}" class="button">${tpl.buttonText}</a>
+            </div>
 
             <div class="footer">
               <p>${tpl.footer.line1}</p>
@@ -324,6 +497,7 @@ async function sendPasswordResetEmail(email, resetToken) {
 }
 
 module.exports = {
+  sendVerificationEmail,
   sendWelcomeEmail,
   sendPasswordResetEmail
 };

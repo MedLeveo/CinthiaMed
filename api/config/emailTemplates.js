@@ -5,7 +5,7 @@
  *
  * IMPORTANTE:
  * - Use HTML para formatação
- * - As variáveis dinâmicas são: ${name}, ${resetUrl}
+ * - As variáveis dinâmicas são: ${name}, ${verifyUrl}, ${resetUrl}, ${loginUrl}
  * - Mantenha a estrutura do CSS para design consistente
  */
 
@@ -20,28 +20,52 @@ module.exports = {
   },
 
   /**
-   * Template: Email de Boas-Vindas
-   * Enviado quando um novo usuário se cadastra
+   * Template: Email de Verificação (enviado no cadastro)
+   * Usuário precisa clicar no link para verificar o email
    */
-  welcome: {
-    subject: 'Bem-vindo ao CinthiaMed!',
+  emailVerification: {
+    subject: 'Confirme seu email - CinthiaMed',
 
-    // Título principal
-    title: 'Bem-vindo ao CinthiaMed!',
+    title: 'Confirme seu email',
+    logoEmoji: '✉️',
 
-    // Emoji do logo (opcional: pode usar emoji ou imagem)
-    logoEmoji: '🩺',
-
-    // Mensagem de saudação
     greeting: (name) => `Olá <span class="highlight">${name}</span>,`,
 
-    // Parágrafo introdutório
-    intro: 'Estamos muito felizes em ter você conosco! Sua conta foi criada com sucesso.',
+    intro: 'Obrigado por se cadastrar no CinthiaMed! Para começar a usar a plataforma, você precisa confirmar seu endereço de email.',
 
-    // Título da seção de funcionalidades
+    instructions: 'Clique no botão abaixo para verificar sua conta:',
+
+    buttonText: 'Verificar meu email',
+
+    expirationWarning: {
+      title: '⏰ Este link expira em 24 horas',
+      description: 'Por segurança, este link de verificação é válido por 24 horas.'
+    },
+
+    securityNote: 'Se você não criou uma conta no CinthiaMed, pode ignorar este email com segurança.',
+
+    footer: {
+      line1: 'Este é um email automático do CinthiaMed',
+      line2: 'Dúvidas? Entre em contato: suporte@cinthiamed.com'
+    }
+  },
+
+  /**
+   * Template: Email de Boas-Vindas (enviado após verificação)
+   * Enviado quando o usuário VERIFICA o email com sucesso
+   */
+  welcome: {
+    subject: 'Bem-vindo ao CinthiaMed! 🎉',
+
+    title: 'Bem-vindo ao CinthiaMed!',
+    logoEmoji: '🩺',
+
+    greeting: (name) => `Olá <span class="highlight">${name}</span>,`,
+
+    intro: 'Sua conta foi verificada com sucesso! Agora você tem acesso completo à plataforma.',
+
     featuresTitle: '✨ O que você pode fazer com o CinthiaMed:',
 
-    // Lista de funcionalidades (cada item é um <li>)
     features: [
       '💬 Consultar informações médicas com IA baseada em evidências científicas',
       '📚 Acessar estudos de múltiplas fontes (PubMed, SciELO, Semantic Scholar, ClinicalTrials)',
@@ -52,10 +76,10 @@ module.exports = {
       '🔐 Gerenciar suas consultas com total segurança, privacidade e compliance LGPD'
     ],
 
-    // Mensagem de encerramento
-    closing: 'Comece agora e aproveite todas as funcionalidades!',
+    closing: 'Clique no botão abaixo para começar:',
 
-    // Rodapé
+    buttonText: 'Acessar a CinthiaMed',
+
     footer: {
       line1: 'Este é um email automático do CinthiaMed',
       line2: 'Dúvidas? Entre em contato: suporte@cinthiamed.com'
@@ -69,29 +93,21 @@ module.exports = {
   passwordReset: {
     subject: 'Recuperação de Senha - CinthiaMed',
 
-    // Título principal
     title: 'Recuperação de Senha',
-
-    // Emoji do logo
     logoEmoji: '🔑',
 
-    // Mensagens
     intro: 'Você solicitou a recuperação da sua senha no CinthiaMed.',
     instructions: 'Clique no botão abaixo para criar uma nova senha:',
 
-    // Texto do botão
     buttonText: 'Redefinir Senha',
 
-    // Aviso de expiração
     expirationWarning: {
       title: '⏰ Este link expira em 1 hora',
       description: 'Por motivos de segurança, este link de recuperação é válido por apenas 1 hora.'
     },
 
-    // Aviso de segurança
     securityNote: 'Se você não solicitou a recuperação de senha, pode ignorar este email com segurança.',
 
-    // Rodapé
     footer: {
       line1: 'Este é um email automático do CinthiaMed',
       line2: 'Dúvidas? Entre em contato: suporte@cinthiamed.com'
