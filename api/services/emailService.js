@@ -59,7 +59,14 @@ async function sendVerificationEmail(email, name, verificationToken) {
     const tpl = templates.emailVerification;
     const cfg = templates.config;
 
-    const info = await transporter.sendMail({
+    console.log('🔍 [EMAIL DEBUG] Preparando para enviar via SMTP...');
+    console.log('🔍 [EMAIL DEBUG] De:', `"${cfg.fromName}" <${cfg.fromEmail}>`);
+    console.log('🔍 [EMAIL DEBUG] Para:', email);
+    console.log('🔍 [EMAIL DEBUG] Assunto:', tpl.subject);
+    console.log('🔍 [EMAIL DEBUG] Link de verificação:', verifyUrl);
+
+    console.log('🔍 [EMAIL DEBUG] Chamando transporter.sendMail()...');
+    const sendMailPromise = transporter.sendMail({
       from: `"${cfg.fromName}" <${cfg.fromEmail}>`,
       to: email,
       subject: tpl.subject,
@@ -182,6 +189,14 @@ async function sendVerificationEmail(email, name, verificationToken) {
         </html>
       `,
     });
+
+    console.log('🔍 [EMAIL DEBUG] Aguardando resposta do SMTP...');
+    const info = await Promise.race([
+      sendMailPromise,
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Timeout: SMTP demorou mais de 30 segundos')), 30000)
+      )
+    ]);
 
     console.log('✅ Email de verificação enviado com sucesso para:', email);
     console.log('📧 Message ID:', info.messageId);
