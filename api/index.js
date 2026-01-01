@@ -168,6 +168,12 @@ app.post('/api/auth/register', registerLimiter, async (req, res) => {
       { expiresIn: '24h' }
     );
 
+    // 📧 Enviar email de boas-vindas (não bloqueia resposta)
+    const { sendWelcomeEmail } = require('./services/emailService');
+    sendWelcomeEmail(user.email, user.name).catch(error => {
+      console.error('⚠️ Falha ao enviar email de boas-vindas (não bloqueante):', error.message);
+    });
+
     res.json({
       user: { name: user.name, email: user.email },
       token
