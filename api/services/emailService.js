@@ -12,6 +12,7 @@
  */
 
 import templates from '../config/emailTemplates.js';
+import axios from 'axios';
 
 // Verificar se API Key está configurada
 const getBrevoApiKey = () => {
@@ -49,49 +50,45 @@ async function sendBrevoEmail({ to, subject, htmlContent, senderName = 'CinthiaM
       htmlContent: htmlContent
     };
 
-    console.log('🔍 [DEBUG] Payload preparado, fazendo fetch...');
+    console.log('🔍 [DEBUG] Payload preparado, chamando Brevo API via axios...');
 
-    // Timeout de 8 segundos (antes do timeout do Vercel de 10s)
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000);
-
-    try {
-      const response = await fetch('https://api.brevo.com/v3/smtp/email', {
-        method: 'POST',
+    // Usar axios com timeout de 8 segundos
+    const response = await axios.post(
+      'https://api.brevo.com/v3/smtp/email',
+      payload,
+      {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
           'api-key': apiKey
         },
-        body: JSON.stringify(payload),
-        signal: controller.signal
-      });
-
-      clearTimeout(timeoutId);
-      console.log('🔍 [DEBUG] Fetch concluído! Status:', response.status);
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('❌ [DEBUG] Erro da API Brevo:', JSON.stringify(errorData, null, 2));
-        throw new Error(`Brevo API Error: ${response.status} - ${JSON.stringify(errorData)}`);
+        timeout: 8000 // 8 segundos
       }
+    );
 
-      const data = await response.json();
-      console.log('✅ Email enviado com sucesso! Message ID:', data.messageId);
-      console.log('🔍 [DEBUG] Resposta completa:', JSON.stringify(data, null, 2));
-      return data;
-
-    } catch (fetchError) {
-      clearTimeout(timeoutId);
-      if (fetchError.name === 'AbortError') {
-        console.error('❌ [DEBUG] Fetch abortado por timeout (8s)');
-        throw new Error('Timeout ao conectar com Brevo API');
-      }
-      throw fetchError;
-    }
+    console.log('🔍 [DEBUG] Axios concluído! Status:', response.status);
+    console.log('✅ Email enviado com sucesso! Message ID:', response.data.messageId);
+    console.log('🔍 [DEBUG] Resposta completa:', JSON.stringify(response.data, null, 2));
+    return response.data;
 
   } catch (error) {
     console.error('❌ Erro ao enviar email via Brevo API:', error.message);
+
+    if (error.code === 'ECONNABORTED') {
+      console.error('❌ [DEBUG] Timeout de 8s atingido - Brevo não respondeu');
+    } else if (error.response) {
+      // Erro de resposta da API (4xx, 5xx)
+      console.error('❌ [DEBUG] Status:', error.response.status);
+      console.error('❌ [DEBUG] Dados do erro:', JSON.stringify(error.response.data, null, 2));
+    } else if (error.request) {
+      // Requisição foi feita mas não recebeu resposta
+      console.error('❌ [DEBUG] Nenhuma resposta recebida da API');
+      console.error('❌ [DEBUG] Request:', error.request);
+    } else {
+      // Erro ao configurar requisição
+      console.error('❌ [DEBUG] Erro ao configurar requisição:', error.message);
+    }
+
     console.error('❌ [DEBUG] Stack:', error.stack);
     throw error;
   }
