@@ -36,6 +36,20 @@ async function sendBrevoEmail({ to, subject, htmlContent, senderName = 'CinthiaM
 
   try {
     console.log(`📧 Enviando email via Brevo API para: ${to}`);
+    console.log('🔍 [DEBUG] API Key primeiros chars:', apiKey.substring(0, 15));
+    console.log('🔍 [DEBUG] Assunto:', subject);
+
+    const payload = {
+      sender: {
+        name: senderName,
+        email: senderEmail
+      },
+      to: [{ email: to }],
+      subject: subject,
+      htmlContent: htmlContent
+    };
+
+    console.log('🔍 [DEBUG] Payload preparado, fazendo fetch...');
 
     const response = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
@@ -44,24 +58,20 @@ async function sendBrevoEmail({ to, subject, htmlContent, senderName = 'CinthiaM
         'Content-Type': 'application/json',
         'api-key': apiKey
       },
-      body: JSON.stringify({
-        sender: {
-          name: senderName,
-          email: senderEmail
-        },
-        to: [{ email: to }],
-        subject: subject,
-        htmlContent: htmlContent
-      })
+      body: JSON.stringify(payload)
     });
+
+    console.log('🔍 [DEBUG] Fetch concluído! Status:', response.status);
 
     if (!response.ok) {
       const errorData = await response.json();
+      console.error('❌ [DEBUG] Erro da API Brevo:', JSON.stringify(errorData, null, 2));
       throw new Error(`Brevo API Error: ${response.status} - ${JSON.stringify(errorData)}`);
     }
 
     const data = await response.json();
     console.log('✅ Email enviado com sucesso! Message ID:', data.messageId);
+    console.log('🔍 [DEBUG] Resposta completa:', JSON.stringify(data, null, 2));
     return data;
   } catch (error) {
     console.error('❌ Erro ao enviar email via Brevo API:', error.message);
