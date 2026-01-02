@@ -99,7 +99,7 @@ async function sendVerificationEmail(email, name, verificationToken) {
           p { color: #94a3b8; font-size: 16px; line-height: 1.6; margin: 0 0 24px 0; text-align: center; }
           .highlight { color: #a78bfa; font-weight: 600; }
           .button-container { text-align: center; margin: 32px 0; }
-          .button { display: inline-block; padding: 16px 48px; background: linear-gradient(135deg, #8b5cf6, #ec4899); color: #ffffff; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4); }
+          .button { display: inline-block; padding: 16px 48px; background: linear-gradient(135deg, #8b5cf6, #ec4899); color: #ffffff !important; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4); }
           .info-box { background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 12px; padding: 20px; margin: 24px 0; }
           .info-box p { font-size: 14px; margin: 0; color: #a78bfa; }
           .footer { border-top: 1px solid #2a3142; padding-top: 24px; margin-top: 32px; text-align: center; }
@@ -166,7 +166,7 @@ async function sendWelcomeEmail(email, name) {
           h1 { color: #e2e8f0; font-size: 28px; font-weight: 700; margin: 0 0 16px 0; text-align: center; }
           p { color: #94a3b8; font-size: 16px; line-height: 1.6; margin: 0 0 24px 0; text-align: center; }
           .button-container { text-align: center; margin: 32px 0; }
-          .button { display: inline-block; padding: 16px 48px; background: linear-gradient(135deg, #8b5cf6, #ec4899); color: #ffffff; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4); }
+          .button { display: inline-block; padding: 16px 48px; background: linear-gradient(135deg, #8b5cf6, #ec4899); color: #ffffff !important; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4); }
           .footer { border-top: 1px solid #2a3142; padding-top: 24px; margin-top: 32px; text-align: center; }
           .footer p { font-size: 12px; color: #64748b; margin: 4px 0; }
         </style>
@@ -227,7 +227,7 @@ async function sendPasswordResetEmail(email, resetToken) {
           h1 { color: #e2e8f0; font-size: 28px; font-weight: 700; margin: 0 0 16px 0; text-align: center; }
           p { color: #94a3b8; font-size: 16px; line-height: 1.6; margin: 0 0 24px 0; text-align: center; }
           .button-container { text-align: center; margin: 32px 0; }
-          .button { display: inline-block; padding: 16px 48px; background: linear-gradient(135deg, #8b5cf6, #ec4899); color: #ffffff; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4); }
+          .button { display: inline-block; padding: 16px 48px; background: linear-gradient(135deg, #8b5cf6, #ec4899); color: #ffffff !important; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4); }
           .info-box { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 12px; padding: 20px; margin: 24px 0; }
           .info-box p { font-size: 14px; margin: 0; color: #fca5a5; }
           .footer { border-top: 1px solid #2a3142; padding-top: 24px; margin-top: 32px; text-align: center; }

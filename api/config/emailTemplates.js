@@ -27,7 +27,7 @@ export default {
     subject: 'Confirme seu email - CinthiaMed',
 
     title: 'Confirme seu email',
-    logoEmoji: '✉️',
+    logoEmoji: 'C',
 
     greeting: (name) => `Olá <span class="highlight">${name}</span>,`,
 
@@ -58,7 +58,7 @@ export default {
     subject: 'Bem-vindo ao CinthiaMed! 🎉',
 
     title: 'Bem-vindo ao CinthiaMed!',
-    logoEmoji: '🩺',
+    logoEmoji: 'C',
 
     greeting: (name) => `Olá <span class="highlight">${name}</span>,`,
 
@@ -94,7 +94,7 @@ export default {
     subject: 'Recuperação de Senha - CinthiaMed',
 
     title: 'Recuperação de Senha',
-    logoEmoji: '🔑',
+    logoEmoji: 'C',
 
     intro: 'Você solicitou a recuperação da sua senha no CinthiaMed.',
     instructions: 'Clique no botão abaixo para criar uma nova senha:',
