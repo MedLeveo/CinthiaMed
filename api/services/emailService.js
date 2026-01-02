@@ -51,30 +51,48 @@ async function sendBrevoEmail({ to, subject, htmlContent, senderName = 'CinthiaM
 
     console.log('🔍 [DEBUG] Payload preparado, fazendo fetch...');
 
-    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'api-key': apiKey
-      },
-      body: JSON.stringify(payload)
-    });
+    // Timeout de 8 segundos (antes do timeout do Vercel de 10s)
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
 
-    console.log('🔍 [DEBUG] Fetch concluído! Status:', response.status);
+    try {
+      const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'api-key': apiKey
+        },
+        body: JSON.stringify(payload),
+        signal: controller.signal
+      });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('❌ [DEBUG] Erro da API Brevo:', JSON.stringify(errorData, null, 2));
-      throw new Error(`Brevo API Error: ${response.status} - ${JSON.stringify(errorData)}`);
+      clearTimeout(timeoutId);
+      console.log('🔍 [DEBUG] Fetch concluído! Status:', response.status);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('❌ [DEBUG] Erro da API Brevo:', JSON.stringify(errorData, null, 2));
+        throw new Error(`Brevo API Error: ${response.status} - ${JSON.stringify(errorData)}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ Email enviado com sucesso! Message ID:', data.messageId);
+      console.log('🔍 [DEBUG] Resposta completa:', JSON.stringify(data, null, 2));
+      return data;
+
+    } catch (fetchError) {
+      clearTimeout(timeoutId);
+      if (fetchError.name === 'AbortError') {
+        console.error('❌ [DEBUG] Fetch abortado por timeout (8s)');
+        throw new Error('Timeout ao conectar com Brevo API');
+      }
+      throw fetchError;
     }
 
-    const data = await response.json();
-    console.log('✅ Email enviado com sucesso! Message ID:', data.messageId);
-    console.log('🔍 [DEBUG] Resposta completa:', JSON.stringify(data, null, 2));
-    return data;
   } catch (error) {
     console.error('❌ Erro ao enviar email via Brevo API:', error.message);
+    console.error('❌ [DEBUG] Stack:', error.stack);
     throw error;
   }
 }
