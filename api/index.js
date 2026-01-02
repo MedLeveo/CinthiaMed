@@ -159,30 +159,35 @@ app.post('/api/auth/register', registerLimiter, async (req, res) => {
     // Hash password com 12 rounds (mais seguro)
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Gerar token de verificação de email (válido por 24 horas)
-    const verificationToken = crypto.randomBytes(32).toString('hex');
-    const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 horas
+    // TEMPORÁRIO: Verificação de email desabilitada devido a problemas de conexão Vercel->Brevo
+    // TODO: Migrar para Resend.com ou SendGrid que funcionam melhor com Vercel
 
-    // Insert user com email_verified = FALSE
+    // Insert user com email_verified = TRUE (temporariamente)
     const result = await pool.query(
-      `INSERT INTO users (name, email, password_hash, email_verified, verification_token, verification_token_expires)
-       VALUES ($1, $2, $3, FALSE, $4, $5)
+      `INSERT INTO users (name, email, password_hash, email_verified)
+       VALUES ($1, $2, $3, TRUE)
        RETURNING id, name, email`,
-      [name, email, hashedPassword, verificationToken, verificationExpires]
+      [name, email, hashedPassword]
     );
 
     const user = result.rows[0];
 
-    // 📧 Enviar email de VERIFICAÇÃO (não de boas-vindas)
-    sendVerificationEmail(user.email, user.name, verificationToken).catch(error => {
-      console.error('⚠️ Falha ao enviar email de verificação (não bloqueante):', error.message);
+    // Tentar enviar email de boas-vindas (não bloqueante, pode falhar)
+    sendWelcomeEmail(user.email, user.name).catch(error => {
+      console.error('⚠️ Falha ao enviar email de boas-vindas:', error.message);
     });
 
-    // NÃO gerar token JWT ainda - usuário precisa verificar o email primeiro
+    // Gerar token JWT para login imediato
+    const token = jwt.sign(
+      { userId: user.id, email: user.email },
+      process.env.SESSION_SECRET || 'fallback-secret',
+      { expiresIn: '24h' }
+    );
+
     res.json({
-      message: 'Conta criada com sucesso! Verifique seu email para ativar sua conta.',
-      email: user.email,
-      requiresVerification: true
+      message: 'Conta criada com sucesso!',
+      user: { name: user.name, email: user.email },
+      token
     });
 
   } catch (error) {
@@ -217,14 +222,8 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
       return res.status(401).json({ error: 'Email ou senha inválidos' });
     }
 
-    // 🔒 VERIFICAR SE O EMAIL FOI VERIFICADO
-    if (!user.email_verified) {
-      return res.status(403).json({
-        error: 'Email não verificado',
-        message: 'Por favor, verifique seu email antes de fazer login. Cheque sua caixa de entrada.',
-        requiresVerification: true
-      });
-    }
+    // TEMPORÁRIO: Verificação de email desabilitada
+    // TODO: Reativar quando migrar para serviço de email compatível com Vercel
 
     // Generate token
     const token = jwt.sign(
