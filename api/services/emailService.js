@@ -1,95 +1,76 @@
 /**
- * Email Service usando Brevo (Sendinblue) API REST
+ * Email Service usando SendGrid
  *
  * Configuração necessária:
- * - BREVO_API_KEY: API Key v3 do Brevo (https://app.brevo.com/settings/keys/api)
+ * - SENDGRID_API_KEY: API Key do SendGrid (https://app.sendgrid.com/settings/api_keys)
+ * - SENDGRID_FROM_EMAIL: Email remetente verificado no SendGrid
  * - FRONTEND_URL: URL do frontend para links de verificação
  *
  * Templates personalizáveis em: api/config/emailTemplates.js
  *
- * IMPORTANTE: Usamos API REST em vez de SMTP porque SMTP não funciona
- * bem em ambientes serverless (Vercel) devido a timeouts e bloqueios de porta.
+ * SendGrid funciona perfeitamente com Vercel e não requer domínio próprio.
  */
 
+import sgMail from '@sendgrid/mail';
 import templates from '../config/emailTemplates.js';
-import axios from 'axios';
 
-// Verificar se API Key está configurada
-const getBrevoApiKey = () => {
-  const apiKey = process.env.BREVO_API_KEY;
+// Configurar SendGrid
+const initSendGrid = () => {
+  const apiKey = process.env.SENDGRID_API_KEY;
 
   if (!apiKey || apiKey === 'sua_api_key_aqui') {
-    console.warn('⚠️ BREVO_API_KEY não configurada - emails não serão enviados');
-    return null;
+    console.warn('⚠️ SENDGRID_API_KEY não configurada - emails não serão enviados');
+    return false;
   }
 
-  return apiKey;
+  sgMail.setApiKey(apiKey);
+  return true;
 };
 
-// Enviar email via API REST do Brevo
-async function sendBrevoEmail({ to, subject, htmlContent, senderName = 'CinthiaMed', senderEmail = 'maycon.design16@gmail.com' }) {
-  const apiKey = getBrevoApiKey();
-
-  if (!apiKey) {
-    console.error('❌ BREVO_API_KEY não configurada');
+// Enviar email via SendGrid
+async function sendEmail({ to, subject, htmlContent, fromEmail, fromName = 'CinthiaMed' }) {
+  if (!initSendGrid()) {
+    console.error('❌ SendGrid não configurado');
     return null;
   }
 
-  try {
-    console.log(`📧 Enviando email via Brevo API para: ${to}`);
-    console.log('🔍 [DEBUG] API Key primeiros chars:', apiKey.substring(0, 15));
-    console.log('🔍 [DEBUG] Assunto:', subject);
+  const from = fromEmail || process.env.SENDGRID_FROM_EMAIL || 'maycon.design16@gmail.com';
 
-    const payload = {
-      sender: {
-        name: senderName,
-        email: senderEmail
+  try {
+    console.log(`📧 Enviando email via SendGrid para: ${to}`);
+    console.log(`📧 De: ${fromName} <${from}>`);
+    console.log(`📧 Assunto: ${subject}`);
+
+    const msg = {
+      to: to,
+      from: {
+        email: from,
+        name: fromName
       },
-      to: [{ email: to }],
       subject: subject,
-      htmlContent: htmlContent
+      html: htmlContent,
     };
 
-    console.log('🔍 [DEBUG] Payload preparado, chamando Brevo API via axios...');
+    const response = await sgMail.send(msg);
 
-    // Usar axios com timeout de 8 segundos
-    const response = await axios.post(
-      'https://api.brevo.com/v3/smtp/email',
-      payload,
-      {
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-          'api-key': apiKey
-        },
-        timeout: 8000 // 8 segundos
-      }
-    );
+    console.log('✅ Email enviado com sucesso via SendGrid!');
+    console.log('📧 Status Code:', response[0].statusCode);
+    console.log('📧 Message ID:', response[0].headers['x-message-id']);
 
-    console.log('🔍 [DEBUG] Axios concluído! Status:', response.status);
-    console.log('✅ Email enviado com sucesso! Message ID:', response.data.messageId);
-    console.log('🔍 [DEBUG] Resposta completa:', JSON.stringify(response.data, null, 2));
-    return response.data;
+    return {
+      success: true,
+      messageId: response[0].headers['x-message-id'],
+      statusCode: response[0].statusCode
+    };
 
   } catch (error) {
-    console.error('❌ Erro ao enviar email via Brevo API:', error.message);
+    console.error('❌ Erro ao enviar email via SendGrid:', error.message);
 
-    if (error.code === 'ECONNABORTED') {
-      console.error('❌ [DEBUG] Timeout de 8s atingido - Brevo não respondeu');
-    } else if (error.response) {
-      // Erro de resposta da API (4xx, 5xx)
-      console.error('❌ [DEBUG] Status:', error.response.status);
-      console.error('❌ [DEBUG] Dados do erro:', JSON.stringify(error.response.data, null, 2));
-    } else if (error.request) {
-      // Requisição foi feita mas não recebeu resposta
-      console.error('❌ [DEBUG] Nenhuma resposta recebida da API');
-      console.error('❌ [DEBUG] Request:', error.request);
-    } else {
-      // Erro ao configurar requisição
-      console.error('❌ [DEBUG] Erro ao configurar requisição:', error.message);
+    if (error.response) {
+      console.error('❌ [DEBUG] Status:', error.response.statusCode);
+      console.error('❌ [DEBUG] Body:', error.response.body);
     }
 
-    console.error('❌ [DEBUG] Stack:', error.stack);
     throw error;
   }
 }
@@ -99,12 +80,6 @@ async function sendBrevoEmail({ to, subject, htmlContent, senderName = 'CinthiaM
  */
 async function sendVerificationEmail(email, name, verificationToken) {
   try {
-    const apiKey = getBrevoApiKey();
-    if (!apiKey) {
-      console.error('❌ BREVO_API_KEY não configurada - email de verificação não enviado');
-      return null;
-    }
-
     const frontendUrl = process.env.FRONTEND_URL || 'https://cinthiamed.vercel.app';
     const verifyUrl = `${frontendUrl}/verify-email?token=${verificationToken}`;
 
@@ -124,8 +99,7 @@ async function sendVerificationEmail(email, name, verificationToken) {
           p { color: #94a3b8; font-size: 16px; line-height: 1.6; margin: 0 0 24px 0; text-align: center; }
           .highlight { color: #a78bfa; font-weight: 600; }
           .button-container { text-align: center; margin: 32px 0; }
-          .button { display: inline-block; padding: 16px 48px; background: linear-gradient(135deg, #8b5cf6, #ec4899); color: #ffffff; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4); transition: all 0.3s ease; }
-          .button:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(139, 92, 246, 0.5); }
+          .button { display: inline-block; padding: 16px 48px; background: linear-gradient(135deg, #8b5cf6, #ec4899); color: #ffffff; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4); }
           .info-box { background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 12px; padding: 20px; margin: 24px 0; }
           .info-box p { font-size: 14px; margin: 0; color: #a78bfa; }
           .footer { border-top: 1px solid #2a3142; padding-top: 24px; margin-top: 32px; text-align: center; }
@@ -156,15 +130,14 @@ async function sendVerificationEmail(email, name, verificationToken) {
       </html>
     `;
 
-    const result = await sendBrevoEmail({
+    return await sendEmail({
       to: email,
       subject: tpl.subject,
       htmlContent: htmlContent,
-      senderName: cfg.fromName,
-      senderEmail: cfg.fromEmail
+      fromEmail: cfg.fromEmail,
+      fromName: cfg.fromName
     });
 
-    return result;
   } catch (error) {
     console.error('❌ Erro ao enviar email de verificação:', error.message);
     // Não lançar erro - falha no email não deve impedir cadastro
@@ -177,12 +150,6 @@ async function sendVerificationEmail(email, name, verificationToken) {
  */
 async function sendWelcomeEmail(email, name) {
   try {
-    const apiKey = getBrevoApiKey();
-    if (!apiKey) {
-      console.log('⚠️ Email de boas-vindas não enviado (BREVO_API_KEY não configurada)');
-      return null;
-    }
-
     const tpl = templates.welcome;
     const cfg = templates.config;
     const frontendUrl = process.env.FRONTEND_URL || 'https://cinthiamed.vercel.app';
@@ -223,15 +190,14 @@ async function sendWelcomeEmail(email, name) {
       </html>
     `;
 
-    const result = await sendBrevoEmail({
+    return await sendEmail({
       to: email,
       subject: tpl.subject,
       htmlContent: htmlContent,
-      senderName: cfg.fromName,
-      senderEmail: cfg.fromEmail
+      fromEmail: cfg.fromEmail,
+      fromName: cfg.fromName
     });
 
-    return result;
   } catch (error) {
     console.error('❌ Erro ao enviar email de boas-vindas:', error.message);
     return null;
@@ -243,12 +209,6 @@ async function sendWelcomeEmail(email, name) {
  */
 async function sendPasswordResetEmail(email, resetToken) {
   try {
-    const apiKey = getBrevoApiKey();
-    if (!apiKey) {
-      console.error('❌ BREVO_API_KEY não configurada');
-      throw new Error('Serviço de email não configurado');
-    }
-
     const frontendUrl = process.env.FRONTEND_URL || 'https://cinthiamed.vercel.app';
     const resetUrl = `${frontendUrl}/reset-password?token=${resetToken}`;
 
@@ -297,15 +257,14 @@ async function sendPasswordResetEmail(email, resetToken) {
       </html>
     `;
 
-    const result = await sendBrevoEmail({
+    return await sendEmail({
       to: email,
       subject: tpl.subject,
       htmlContent: htmlContent,
-      senderName: cfg.fromName,
-      senderEmail: cfg.fromEmail
+      fromEmail: cfg.fromEmail,
+      fromName: cfg.fromName
     });
 
-    return result;
   } catch (error) {
     console.error('❌ Erro ao enviar email de recuperação de senha:', error.message);
     throw error; // Recuperação de senha deve falhar se email não for enviado
