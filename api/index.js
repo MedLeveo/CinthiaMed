@@ -7,7 +7,7 @@ import jwt from 'jsonwebtoken';
 import OpenAI from 'openai';
 import rateLimit from 'express-rate-limit';
 import crypto from 'crypto';
-import { sendVerificationEmail, sendWelcomeEmail } from './services/emailService.js';
+import { sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail } from './services/emailService.js';
 import { buscarEvidencias, formatarParaPrompt } from './services/scientificSearch.js';
 
 const { Pool } = pg;
@@ -324,6 +324,97 @@ app.post('/api/auth/verify-email', async (req, res) => {
 // Logout
 app.post('/api/auth/logout', (req, res) => {
   res.json({ message: 'Logout realizado' });
+});
+
+// Solicitar recuperação de senha
+app.post('/api/auth/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: 'Email é obrigatório' });
+    }
+
+    // Verificar se usuário existe
+    const result = await pool.query('SELECT id, name, email FROM users WHERE email = $1', [email]);
+
+    // Por segurança, sempre retornar sucesso (não revelar se email existe)
+    if (result.rows.length === 0) {
+      return res.json({ message: 'Se o email existir, você receberá instruções para recuperar sua senha.' });
+    }
+
+    const user = result.rows[0];
+
+    // Gerar token de recuperação (válido por 1 hora)
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetTokenExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
+
+    // Salvar token no banco
+    await pool.query(
+      `UPDATE users
+       SET password_reset_token = $1, password_reset_expires = $2
+       WHERE id = $3`,
+      [resetToken, resetTokenExpires, user.id]
+    );
+
+    // Enviar email de recuperação
+    await sendPasswordResetEmail(user.email, resetToken);
+
+    res.json({ message: 'Se o email existir, você receberá instruções para recuperar sua senha.' });
+
+  } catch (error) {
+    console.error('❌ Erro ao solicitar recuperação de senha:', error);
+    res.status(500).json({ error: 'Erro ao processar solicitação' });
+  }
+});
+
+// Redefinir senha com token
+app.post('/api/auth/reset-password', async (req, res) => {
+  try {
+    const { token, password } = req.body;
+
+    if (!token || !password) {
+      return res.status(400).json({ error: 'Token e senha são obrigatórios' });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'A senha deve ter no mínimo 6 caracteres' });
+    }
+
+    // Buscar usuário pelo token
+    const result = await pool.query(
+      'SELECT id, email, password_reset_expires FROM users WHERE password_reset_token = $1',
+      [token]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(400).json({ error: 'Token de recuperação inválido' });
+    }
+
+    const user = result.rows[0];
+
+    // Verificar se token expirou
+    if (new Date() > new Date(user.password_reset_expires)) {
+      return res.status(400).json({ error: 'Token de recuperação expirado. Solicite uma nova recuperação de senha.' });
+    }
+
+    // Hash da nova senha
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Atualizar senha e limpar token
+    await pool.query(
+      `UPDATE users
+       SET password_hash = $1, password_reset_token = NULL, password_reset_expires = NULL
+       WHERE id = $2`,
+      [hashedPassword, user.id]
+    );
+
+    res.json({ message: 'Senha redefinida com sucesso!' });
+
+  } catch (error) {
+    console.error('❌ Erro ao redefinir senha:', error);
+    res.status(500).json({ error: 'Erro ao redefinir senha' });
+  }
 });
 
 // Google OAuth - Redirect to Google
