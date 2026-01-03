@@ -15,10 +15,11 @@
     "passport-google-oauth20": "^2.0.0",
     "express-session": "^1.17.3",
     "express-rate-limit": "^7.1.5",
-    "@langchain/core": "^1.1.8",
-    "@langchain/langgraph": "^1.0.7",
-    "@langchain/openai": "^1.2.0",
-    "axios": "^1.13.2",
-    "zod": "^3.22.4"
+    "@langchain/core": "^0.3.22",
+    "@langchain/langgraph": "^0.2.20",
+    "@langchain/openai": "^0.3.14",
+    "langchain": "^0.3.9",
+    "axios": "^1.7.9",
+    "zod": "^3.24.1"
   }
 }
