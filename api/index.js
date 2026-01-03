@@ -811,6 +811,208 @@ app.get('/api/auth/google/callback', async (req, res) => {
   }
 });
 
+// ============================================
+// NOVOS ENDPOINTS - Análise de Exames e SOAP
+// ============================================
+
+/**
+ * POST /api/analyze-exam
+ * Analisa imagem de exame usando GPT-4 Vision
+ */
+app.post('/api/analyze-exam', async (req, res) => {
+  try {
+    // Verificar se há arquivo de imagem
+    if (!req.body.image) {
+      return res.status(400).json({ error: 'Nenhuma imagem fornecida' });
+    }
+
+    const base64Image = req.body.image.replace(/^data:image\/\w+;base64,/, '');
+
+    console.log('📋 Analisando exame médico...');
+
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4-vision-preview',
+      messages: [
+        {
+          role: 'system',
+          content: `Você é um assistente médico especializado em análise de exames laboratoriais e de imagem.
+
+IMPORTANTE: Sempre inclua no final da análise o seguinte aviso:
+"⚠️ AVISO: Esta é uma análise auxiliada por Inteligência Artificial e NÃO substitui a interpretação de um médico qualificado. Sempre consulte um profissional de saúde para validação."
+
+Analise a imagem do exame e forneça:
+1. Tipo de exame identificado
+2. Achados principais (valores fora da referência marcados como anormais)
+3. Resumo clínico objetivo
+4. Recomendações baseadas em evidências científicas (quando aplicável)
+
+Seja objetivo, técnico e use terminologia médica apropriada.`
+        },
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'text',
+              text: 'Analise este exame médico e forneça um relatório estruturado em JSON com os campos: examType, findings (array de objetos com parameter, value, reference, severity), summary, recommendations.'
+            },
+            {
+              type: 'image_url',
+              image_url: {
+                url: `data:image/jpeg;base64,${base64Image}`,
+                detail: 'high'
+              }
+            }
+          ]
+        }
+      ],
+      max_tokens: 1500,
+      temperature: 0.3
+    });
+
+    const analysis = response.choices[0].message.content;
+    console.log('✅ Análise concluída');
+
+    // Tentar parsear JSON se vier nesse formato
+    let result;
+    try {
+      result = JSON.parse(analysis);
+    } catch {
+      // Se não vier em JSON, estruturar manualmente
+      result = {
+        examType: 'Exame Médico',
+        findings: [],
+        summary: analysis,
+        recommendations: 'Consultar médico para avaliação detalhada.'
+      };
+    }
+
+    res.json(result);
+
+  } catch (error) {
+    console.error('❌ Erro na análise de exame:', error);
+    res.status(500).json({
+      error: 'Erro ao analisar exame',
+      details: error.message
+    });
+  }
+});
+
+/**
+ * POST /api/format-soap
+ * Formata transcrição de consulta em formato SOAP
+ */
+app.post('/api/format-soap', async (req, res) => {
+  try {
+    const { transcript, patientData } = req.body;
+
+    if (!transcript) {
+      return res.status(400).json({ error: 'Transcrição não fornecida' });
+    }
+
+    console.log('🏥 Formatando prontuário em SOAP...');
+
+    // Buscar evidências científicas se necessário
+    let evidenciasContext = '';
+    if (detectMedicalQuestion(transcript)) {
+      try {
+        console.log('🔬 Buscando evidências científicas...');
+        const evidencias = await buscarEvidencias(transcript);
+        if (evidencias && evidencias.length > 0) {
+          evidenciasContext = formatarParaPrompt(evidencias);
+        }
+      } catch (err) {
+        console.warn('⚠️  Erro ao buscar evidências:', err.message);
+      }
+    }
+
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4',
+      messages: [
+        {
+          role: 'system',
+          content: `Você é um assistente médico especializado em estruturação de prontuários eletrônicos.
+
+Formate a transcrição da consulta no formato SOAP:
+
+**S (SUBJETIVO)**: Queixa principal, história da doença atual, sintomas relatados pelo paciente
+**O (OBJETIVO)**: Exame físico, sinais vitais, achados objetivos
+**A (AVALIAÇÃO)**: Diagnóstico, hipótese diagnóstica, análise clínica, CID se mencionado
+**P (PLANO)**: Conduta terapêutica, prescrições, orientações, encaminhamentos, retorno
+
+DIRETRIZES:
+- Seja objetivo e use terminologia médica adequada
+- Baseie condutas em evidências científicas quando disponíveis
+- Se alguma seção não estiver clara na transcrição, indique "Não mencionado na consulta"
+- Mantenha a estrutura clara com cada seção bem delimitada
+
+${evidenciasContext ? `\nEVIDÊNCIAS CIENTÍFICAS RELEVANTES:\n${evidenciasContext}` : ''}
+
+SEMPRE inclua ao final:
+"⚠️ Prontuário estruturado com auxílio de IA. Revise e valide antes de finalizar."`
+        },
+        {
+          role: 'user',
+          content: `Transcrição da consulta:
+${transcript}
+
+Dados do paciente:
+- Nome: ${patientData?.name || 'Não informado'}
+- Idade: ${patientData?.age || 'Não informada'}
+- Sexo: ${patientData?.gender || 'Não informado'}
+
+Por favor, formate em SOAP estruturado.`
+        }
+      ],
+      max_tokens: 2000,
+      temperature: 0.3
+    });
+
+    const soapText = response.choices[0].message.content;
+
+    // Extrair seções SOAP
+    const extractSection = (text, sectionName) => {
+      const patterns = [
+        new RegExp(`\\*\\*${sectionName}[\\*:]?\\*\\*[\\s]*([\\s\\S]*?)(?=\\n\\s*\\*\\*[SOAP]|$)`, 'i'),
+        new RegExp(`${sectionName}[:\n]([\\s\\S]*?)(?=\\n\\n[A-Z]|$)`, 'i')
+      ];
+
+      for (const pattern of patterns) {
+        const match = text.match(pattern);
+        if (match && match[1]) {
+          return match[1].trim();
+        }
+      }
+      return null;
+    };
+
+    const soapData = {
+      soap: {
+        subjetivo: extractSection(soapText, 'S') || extractSection(soapText, 'SUBJETIVO') || 'Não identificado na transcrição',
+        objetivo: extractSection(soapText, 'O') || extractSection(soapText, 'OBJETIVO') || 'Não identificado na transcrição',
+        avaliacao: extractSection(soapText, 'A') || extractSection(soapText, 'AVALIAÇÃO') || 'Não identificado na transcrição',
+        plano: extractSection(soapText, 'P') || extractSection(soapText, 'PLANO') || 'Não identificado na transcrição'
+      },
+      patientData: {
+        nome: patientData?.name || 'Não informado',
+        idade: patientData?.age || 'Não informada',
+        sexo: patientData?.gender || 'Não informado'
+      },
+      timestamp: new Date().toLocaleString('pt-BR'),
+      fullText: soapText
+    };
+
+    console.log('✅ SOAP formatado com sucesso');
+    res.json(soapData);
+
+  } catch (error) {
+    console.error('❌ Erro ao formatar SOAP:', error);
+    res.status(500).json({
+      error: 'Erro ao formatar prontuário',
+      details: error.message
+    });
+  }
+});
+
 // Export handler para Vercel
 export default function handler(req, res) {
   return app(req, res);

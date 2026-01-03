@@ -6,17 +6,24 @@ import rehypeSanitize from 'rehype-sanitize';
 import 'katex/dist/katex.min.css';
 import API_URL from './config/api';
 import { getSystemPrompt, MENU_TO_CONTEXT } from './config/systemPrompts';
+import ExamReader from './components/ExamReader';
+import SOAPViewer from './components/SOAPViewer';
+import { formatToSOAP, generateSOAPLocal } from './utils/soapFormatter';
 
 const CinthiaMed = ({ user, onLogout }) => {
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
   const [selectedAssistant, setSelectedAssistant] = useState('Assistente Geral');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
-  const [currentView, setCurrentView] = useState('chat'); // 'chat' ou 'recording'
+  const [currentView, setCurrentView] = useState('chat'); // 'chat', 'recording' ou 'exam-reader'
   const [activeMenuAction, setActiveMenuAction] = useState('new'); // Para rastrear qual botão do menu está ativo
   const [currentContext, setCurrentContext] = useState('chat'); // Contexto atual para system prompt
   const [isThinking, setIsThinking] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+
+  // Novos estados para funcionalidades
+  const [currentSOAP, setCurrentSOAP] = useState(null);
+  const [showSOAPViewer, setShowSOAPViewer] = useState(false);
 
   // Sistema de conversas
   const [conversations, setConversations] = useState([]);
@@ -378,6 +385,7 @@ const CinthiaMed = ({ user, onLogout }) => {
   const menuItems = [
     { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>, label: 'Nova conversa', action: 'new' },
     { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>, label: 'Gravar Consulta Online', action: 'recording' },
+    { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>, label: 'Analisar Exame', action: 'exam-reader' },
     { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 014-4h4a4 4 0 014 4v2"/><circle cx="12" cy="8" r="2"/></svg>, label: 'Doses Pediátricas', action: 'pediatric' },
     { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>, label: 'Escores Clínicos', action: 'scores' },
     { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 10h8M8 14h4"/></svg>, label: 'Calculadora Médica', action: 'calculator' },
@@ -702,6 +710,8 @@ Gere UMA pergunta de acompanhamento relevante e útil que eu possa fazer para ap
     // Gerenciar views específicas
     if (action === 'recording') {
       setCurrentView('recording');
+    } else if (action === 'exam-reader') {
+      setCurrentView('exam-reader');
     } else if (action === 'scores') {
       setCurrentView('scores');
     } else if (action === 'calculator') {
@@ -1047,7 +1057,31 @@ Gere UMA pergunta de acompanhamento relevante e útil que eu possa fazer para ap
 
         // Exibir prontuário formatado
         setClinicalReport(data.medicalRecord);
-        showToastMessage('Prontuário médico gerado com sucesso!');
+
+        // NOVO: Tentar formatar em SOAP
+        try {
+          console.log('🏥 Formatando prontuário em SOAP...');
+          const soapFormatted = await formatToSOAP(data.transcription || data.medicalRecord, {
+            name: patientName,
+            age: patientAge,
+            gender: patientGender
+          });
+
+          setCurrentSOAP(soapFormatted);
+          setShowSOAPViewer(true);
+          showToastMessage('Prontuário SOAP gerado com sucesso!');
+        } catch (soapError) {
+          console.warn('⚠️  Não foi possível formatar em SOAP, usando formato local:', soapError);
+          // Fallback: usar formatação local
+          const localSOAP = generateSOAPLocal(data.transcription || data.medicalRecord, {
+            name: patientName,
+            age: patientAge,
+            gender: patientGender
+          });
+          setCurrentSOAP(localSOAP);
+          setShowSOAPViewer(true);
+          showToastMessage('Prontuário médico gerado com sucesso!');
+        }
 
         // Log da transcrição para debug
         if (data.transcription) {
@@ -2722,8 +2756,30 @@ Gere UMA pergunta de acompanhamento relevante e útil que eu possa fazer para ap
                 </button>
               </div>
 
+              {/* SOAP Viewer */}
+              {showSOAPViewer && currentSOAP && (
+                <div style={{
+                  marginTop: '40px',
+                  width: '100%',
+                  maxWidth: '1200px',
+                }}>
+                  <SOAPViewer
+                    soapData={currentSOAP}
+                    patientData={{
+                      nome: patientName,
+                      idade: patientAge,
+                      sexo: patientGender
+                    }}
+                    onExportTypeSelect={(type) => {
+                      console.log('Gerar documento tipo:', type);
+                      showToastMessage(`Funcionalidade de ${type} será implementada em breve!`);
+                    }}
+                  />
+                </div>
+              )}
+
               {/* Área do Relatório Clínico */}
-              {clinicalReport && (
+              {clinicalReport && !showSOAPViewer && (
                 <div style={{
                   marginTop: '40px',
                   width: '100%',
@@ -2828,6 +2884,37 @@ Gere UMA pergunta de acompanhamento relevante e útil que eu possa fazer para ap
                 </div>
               )}
             </div>
+          </div>
+
+        ) : currentView === 'exam-reader' ? (
+          /* Exam Reader View */
+          <div style={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            overflowY: 'auto',
+            padding: '20px',
+            position: 'relative',
+            zIndex: 1,
+          }}>
+            <ExamReader
+              onAnalysisComplete={(result) => {
+                // Adicionar resultado ao chat
+                const analysisMessage = `📋 **Análise de Exame Concluída**\n\n` +
+                  `**Tipo:** ${result.examType || 'Não identificado'}\n\n` +
+                  `**Resumo:** ${result.summary || 'Análise realizada com sucesso'}\n\n` +
+                  `⚠️ **Importante:** Esta é uma análise auxiliada por IA e não substitui a interpretação de um médico.`;
+
+                setMessages(prev => [...prev, {
+                  role: 'assistant',
+                  content: analysisMessage
+                }]);
+
+                // Voltar para o chat
+                setCurrentView('chat');
+                showToastMessage('Análise concluída! Resultado adicionado ao chat.');
+              }}
+            />
           </div>
 
         ) : currentView === 'scores' ? (
