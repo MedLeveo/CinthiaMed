@@ -12,10 +12,10 @@ find api -name "*.js" -type f | wc -l
 
 ---
 
-## 2. Verificar arquivos auxiliares em `src/api/`
+## 2. Verificar arquivos auxiliares em `src/server/`
 
 ```bash
-find src/api -name "*.js" -type f | wc -l
+find src/server -name "*.js" -type f | wc -l
 ```
 
 **Resultado esperado:** `13` arquivos
@@ -40,13 +40,13 @@ api/
 ## 4. Verificar imports em `api/index.js`
 
 ```bash
-grep "from.*src/api" api/index.js | head -5
+grep "from.*src/server" api/index.js | head -5
 ```
 
-**Resultado esperado:** Todos os imports devem apontar para `../src/api/`:
+**Resultado esperado:** Todos os imports devem apontar para `../src/server/`:
 ```javascript
-import { sendVerificationEmail } from '../src/api/services/emailService.js';
-import { createMedicalAgentWorkflow } from '../src/api/graph/workflow.js';
+import { sendVerificationEmail } from '../src/server/services/emailService.js';
+import { createMedicalAgentWorkflow } from '../src/server/graph/workflow.js';
 ```
 
 ---
@@ -57,12 +57,12 @@ import { createMedicalAgentWorkflow } from '../src/api/graph/workflow.js';
 cat .vercelignore
 ```
 
-**Resultado esperado:** NÃO deve conter `src/` ou `src/api/` na lista de ignores.
+**Resultado esperado:** NÃO deve conter `src/` ou `src/server/` na lista de ignores.
 
 Deve ter comentário:
 ```
-# Keep src/api/ - needed by api/index.js
-# Do NOT ignore src/api/
+# Keep src/server/ - needed by api/index.js
+# Do NOT ignore src/server/
 ```
 
 ---

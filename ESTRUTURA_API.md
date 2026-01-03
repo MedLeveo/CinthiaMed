@@ -22,7 +22,7 @@ cinthiamed/
 │   ├── index.js                  # ✅ ÚNICO endpoint (1 serverless function)
 │   └── package.json              # Dependências do serverless
 │
-├── src/api/                      # Código auxiliar (NÃO são serverless functions)
+├── src/server/                      # Código auxiliar (NÃO são serverless functions)
 │   ├── config/
 │   │   ├── emailTemplates.js     # Templates de email
 │   │   └── EMAIL_CONFIG.md       # Documentação de email
@@ -79,7 +79,7 @@ Total: 14 funções > Limite de 12 (Hobby plan) ❌
 api/
 └── index.js              → Função 1 ✅
 
-src/api/
+src/server/
 └── (todos os arquivos auxiliares - NÃO são funções serverless)
 
 Total: 1 função < Limite de 12 ✅
@@ -99,8 +99,8 @@ import { createMedicalAgentWorkflow } from './graph/workflow.js';
 **Agora:**
 ```javascript
 // api/index.js
-import { sendVerificationEmail } from '../src/api/services/emailService.js';
-import { createMedicalAgentWorkflow } from '../src/api/graph/workflow.js';
+import { sendVerificationEmail } from '../src/server/services/emailService.js';
+import { createMedicalAgentWorkflow } from '../src/server/graph/workflow.js';
 ```
 
 ---
@@ -156,7 +156,7 @@ git push origin main
 ## ⚠️ IMPORTANTE: Não Criar Novos Arquivos em `api/`
 
 **Regra:**
-- ✅ Criar arquivos auxiliares em `src/api/`
+- ✅ Criar arquivos auxiliares em `src/server/`
 - ❌ **NUNCA** criar novos `.js` em `api/` (exceto `index.js`)
 
 **Motivo:**
@@ -165,7 +165,7 @@ Cada arquivo `.js` em `api/` = 1 função serverless na Vercel
 **Exemplo Correto:**
 ```bash
 # ✅ Criar novo serviço
-touch src/api/services/newService.js
+touch src/server/services/newService.js
 
 # ❌ NÃO FAZER
 touch api/newService.js  # Isso criaria uma 2ª função serverless!
@@ -182,7 +182,7 @@ Vercel Edge Network
   ↓
 /api/* → api/index.js (Serverless Function)
             ↓
-         Importa módulos de src/api/
+         Importa módulos de src/server/
             ↓ ↓ ↓
       graph/  services/  utils/
             ↓
@@ -191,7 +191,7 @@ Vercel Edge Network
       Retorna resposta
 ```
 
-**Tudo roda em 1 única função serverless**, importando módulos de `src/api/` conforme necessário.
+**Tudo roda em 1 única função serverless**, importando módulos de `src/server/` conforme necessário.
 
 ---
 

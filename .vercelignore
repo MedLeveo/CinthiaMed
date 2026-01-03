@@ -8,5 +8,5 @@ public/src/components/
 public/src/App.js
 public/src/index.js
 
-# Keep src/api/ - needed by api/index.js
-# Do NOT ignore src/api/
+# Keep src/server/ - needed by api/index.js
+# Do NOT ignore src/server/
