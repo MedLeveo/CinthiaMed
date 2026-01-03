@@ -42,16 +42,22 @@ const ExamReader = ({ onAnalysisComplete }) => {
     setError(null);
 
     try {
-      const formData = new FormData();
-      formData.append('image', selectedFile);
+      // Usar o preview que já está em base64
+      const base64Image = preview;
 
       const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/analyze-exam`, {
         method: 'POST',
-        body: formData,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          image: base64Image
+        }),
       });
 
       if (!response.ok) {
-        throw new Error('Erro ao analisar exame');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Erro ao analisar exame');
       }
 
       const result = await response.json();
@@ -61,7 +67,8 @@ const ExamReader = ({ onAnalysisComplete }) => {
         onAnalysisComplete(result);
       }
     } catch (err) {
-      setError(err.message || 'Erro ao analisar exame');
+      console.error('Erro na análise:', err);
+      setError(err.message || 'Erro ao analisar exame. Verifique sua conexão.');
     } finally {
       setIsAnalyzing(false);
     }
@@ -77,7 +84,7 @@ const ExamReader = ({ onAnalysisComplete }) => {
   return (
     <div className="exam-reader">
       <div className="exam-reader-header">
-        <h2>📋 Leitor de Exames</h2>
+        <h2>Leitor de Exames</h2>
         <p>Envie uma foto do exame para análise automática</p>
       </div>
 
@@ -120,7 +127,7 @@ const ExamReader = ({ onAnalysisComplete }) => {
                 </>
               ) : (
                 <>
-                  🔍 Analisar Exame
+                  Analisar Exame
                 </>
               )}
             </button>
@@ -129,7 +136,7 @@ const ExamReader = ({ onAnalysisComplete }) => {
           {analysis && (
             <div className="analysis-result">
               <div className="result-header">
-                <h3>✅ Análise Concluída</h3>
+                <h3>Análise Concluída</h3>
                 <button className="btn-secondary" onClick={resetUpload}>
                   Analisar Outro Exame
                 </button>
@@ -137,18 +144,18 @@ const ExamReader = ({ onAnalysisComplete }) => {
 
               <div className="result-content">
                 <div className="result-section">
-                  <h4>📊 Tipo de Exame</h4>
+                  <h4>Tipo de Exame</h4>
                   <p>{analysis.examType || 'Não identificado'}</p>
                 </div>
 
                 {analysis.findings && analysis.findings.length > 0 && (
                   <div className="result-section">
-                    <h4>🔍 Achados Principais</h4>
+                    <h4>Achados Principais</h4>
                     <ul>
                       {analysis.findings.map((finding, index) => (
                         <li key={index}>
                           <span className={`finding-badge ${finding.severity || 'normal'}`}>
-                            {finding.severity === 'abnormal' ? '⚠️' : '✓'}
+                            {finding.severity === 'abnormal' ? '!' : '✓'}
                           </span>
                           <strong>{finding.parameter}:</strong> {finding.value}
                           {finding.reference && <small> (Referência: {finding.reference})</small>}
@@ -160,14 +167,14 @@ const ExamReader = ({ onAnalysisComplete }) => {
 
                 {analysis.summary && (
                   <div className="result-section">
-                    <h4>📝 Resumo</h4>
+                    <h4>Resumo</h4>
                     <p>{analysis.summary}</p>
                   </div>
                 )}
 
                 {analysis.recommendations && (
                   <div className="result-section">
-                    <h4>💡 Recomendações</h4>
+                    <h4>Recomendações</h4>
                     <p>{analysis.recommendations}</p>
                   </div>
                 )}
@@ -179,7 +186,7 @@ const ExamReader = ({ onAnalysisComplete }) => {
 
       {error && (
         <div className="error-message">
-          ⚠️ {error}
+          {error}
         </div>
       )}
     </div>

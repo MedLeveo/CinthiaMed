@@ -43,14 +43,14 @@ const ExportButtons = ({ soapData, patientData, onExportTypeSelect }) => {
   return (
     <div className="export-buttons-container">
       <div className="export-section">
-        <h3>📥 Exportar Prontuário SOAP</h3>
+        <h3>Exportar Prontuário SOAP</h3>
         <div className="button-group">
           <button
             className="export-btn btn-txt"
             onClick={() => handleSOAPExport('txt')}
             title="Download como arquivo de texto"
           >
-            📄 TXT
+            TXT
           </button>
 
           <button
@@ -58,7 +58,7 @@ const ExportButtons = ({ soapData, patientData, onExportTypeSelect }) => {
             onClick={() => handleSOAPExport('html')}
             title="Download como HTML (pode abrir no navegador)"
           >
-            🌐 HTML
+            HTML
           </button>
 
           <button
@@ -66,20 +66,20 @@ const ExportButtons = ({ soapData, patientData, onExportTypeSelect }) => {
             onClick={() => handleSOAPExport('pdf')}
             title="Imprimir/Salvar como PDF"
           >
-            📑 PDF
+            PDF
           </button>
         </div>
       </div>
 
       <div className="export-section">
-        <h3>📝 Gerar Outros Documentos</h3>
+        <h3>Gerar Outros Documentos</h3>
         <div className="button-group">
           <button
             className="export-btn btn-prescription"
             onClick={() => handleOtherExport('prescription')}
             title="Gerar receita médica"
           >
-            💊 Receita
+            Receita
           </button>
 
           <button
@@ -87,7 +87,7 @@ const ExportButtons = ({ soapData, patientData, onExportTypeSelect }) => {
             onClick={() => handleOtherExport('exam')}
             title="Gerar pedido de exame"
           >
-            🔬 Pedido de Exame
+            Pedido de Exame
           </button>
 
           <button
@@ -95,14 +95,14 @@ const ExportButtons = ({ soapData, patientData, onExportTypeSelect }) => {
             onClick={() => handleOtherExport('certificate')}
             title="Gerar atestado médico"
           >
-            📋 Atestado
+            Atestado
           </button>
         </div>
       </div>
 
       <div className="disclaimer">
         <p>
-          ⚠️ <strong>Importante:</strong> Todos os documentos gerados são auxiliados por IA
+          <strong>Importante:</strong> Todos os documentos gerados são auxiliados por IA
           e baseados em evidências científicas. Sempre revise, assine e valide antes de
           entregar ao paciente. A responsabilidade final é do profissional médico.
         </p>

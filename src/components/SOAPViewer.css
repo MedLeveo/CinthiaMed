@@ -11,7 +11,7 @@
 }
 
 .soap-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #6b7280;
   color: white;
   padding: 2rem;
   border-radius: 12px 12px 0 0;
@@ -21,6 +21,7 @@
 .soap-header h2 {
   margin: 0 0 1rem 0;
   font-size: 1.8rem;
+  font-weight: 600;
 }
 
 .soap-patient-info {
@@ -68,41 +69,42 @@
 }
 
 .soap-section.subjetivo .soap-section-header {
-  border-color: #667eea;
+  border-color: #6b7280;
 }
 
 .soap-section.objetivo .soap-section-header {
-  border-color: #48bb78;
+  border-color: #6b7280;
 }
 
 .soap-section.avaliacao .soap-section-header {
-  border-color: #ed8936;
+  border-color: #6b7280;
 }
 
 .soap-section.plano .soap-section-header {
-  border-color: #9f7aea;
+  border-color: #6b7280;
 }
 
 .soap-section-header h3 {
   margin: 0;
   font-size: 1.3rem;
-  color: #2d3748;
+  color: #374151;
+  font-weight: 600;
 }
 
 .soap-section.subjetivo .soap-section-header h3 {
-  color: #667eea;
+  color: #374151;
 }
 
 .soap-section.objetivo .soap-section-header h3 {
-  color: #48bb78;
+  color: #374151;
 }
 
 .soap-section.avaliacao .soap-section-header h3 {
-  color: #ed8936;
+  color: #374151;
 }
 
 .soap-section.plano .soap-section-header h3 {
-  color: #9f7aea;
+  color: #374151;
 }
 
 .soap-badge {

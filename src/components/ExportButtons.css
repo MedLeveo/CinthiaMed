@@ -55,33 +55,57 @@
 
 /* Cores específicas por tipo */
 .btn-txt {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #6b7280;
   color: white;
+}
+
+.btn-txt:hover {
+  background: #4b5563;
 }
 
 .btn-html {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  background: #6b7280;
   color: white;
+}
+
+.btn-html:hover {
+  background: #4b5563;
 }
 
 .btn-pdf {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  background: #6b7280;
   color: white;
+}
+
+.btn-pdf:hover {
+  background: #4b5563;
 }
 
 .btn-prescription {
-  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  background: #6b7280;
   color: white;
+}
+
+.btn-prescription:hover {
+  background: #4b5563;
 }
 
 .btn-exam {
-  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  background: #6b7280;
   color: white;
 }
 
+.btn-exam:hover {
+  background: #4b5563;
+}
+
 .btn-certificate {
-  background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+  background: #6b7280;
   color: white;
+}
+
+.btn-certificate:hover {
+  background: #4b5563;
 }
 
 .disclaimer {
