@@ -1,170 +1,130 @@
 /**
- * Estado do Grafo LangGraph
+ * Medical Workflow State Management
  *
- * Define a estrutura de dados que será passada entre os nós do grafo
+ * ATUALIZADO: Removido LangGraph Annotation, usando plain JavaScript objects
+ * Mantém mesma estrutura de estado para compatibilidade
  */
-
-import { Annotation } from '@langchain/langgraph';
 
 /**
- * Definição do estado usando LangGraph Annotation
+ * Cria estado inicial do workflow
+ *
+ * @param {Object} input - Dados iniciais
+ * @param {string} input.user_query - Pergunta do usuário
+ * @param {Array} input.conversation_history - Histórico de conversa
+ * @returns {Object} Estado inicial
  */
-export const GraphState = Annotation.Root({
-  // Histórico de mensagens da conversa
-  messages: Annotation({
-    reducer: (current, update) => [...current, ...update],
-    default: () => []
-  }),
-
-  // Pergunta original do usuário
-  user_query: Annotation({
-    reducer: (_, update) => update,
-    default: () => ''
-  }),
-
-  // ID do usuário para cache
-  userId: Annotation({
-    reducer: (_, update) => update,
-    default: () => ''
-  }),
-
-  // ID da conversa
-  conversationId: Annotation({
-    reducer: (_, update) => update,
-    default: () => ''
-  }),
-
-  // Tipo de contexto (Geral, Pediatria, Emergência, etc.)
-  context_type: Annotation({
-    reducer: (_, update) => update,
-    default: () => 'geral'
-  }),
-
-  // System message personalizado
-  system_message: Annotation({
-    reducer: (_, update) => update,
-    default: () => 'Você é a CinthiaMed, uma assistente médica virtual.'
-  }),
-
-  // Evidências brutas de TODAS as APIs
-  raw_evidence: Annotation({
-    reducer: (current, update) => ({ ...current, ...update }),
-    default: () => ({
-      semanticScholar: [],
-      europePmc: [],
-      clinicalTrials: [],
-      openFDA: [],
-      lilacs: []
-    })
-  }),
-
-  // Informações sobre doença regional detectada
-  regional_disease_info: Annotation({
-    reducer: (_, update) => update,
-    default: () => ({ detected: false })
-  }),
-
-  // Erros de API (para mensagens ao usuário)
-  api_errors: Annotation({
-    reducer: (current, update) => [...current, ...update],
-    default: () => []
-  }),
-
-  // Flags de roteamento
-  needs_drug_search: Annotation({
-    reducer: (_, update) => update,
-    default: () => false
-  }),
-
-  needs_regional_search: Annotation({
-    reducer: (_, update) => update,
-    default: () => false
-  }),
-
-  is_medical_question: Annotation({
-    reducer: (_, update) => update,
-    default: () => false
-  }),
-
-  // Síntese clínica gerada pela IA
-  clinical_synthesis: Annotation({
-    reducer: (_, update) => update,
-    default: () => ''
-  }),
-
-  // Avisos de segurança encontrados
-  safety_warnings: Annotation({
-    reducer: (current, update) => [...current, ...update],
-    default: () => []
-  }),
-
-  // Flag de aprovação do revisor
-  is_safe: Annotation({
-    reducer: (_, update) => update,
-    default: () => true
-  }),
-
-  // Contador de tentativas de revisão
-  revision_attempts: Annotation({
-    reducer: (current, update) => current + update,
-    default: () => 0
-  }),
-
-  // Metadados da resposta
-  metadata: Annotation({
-    reducer: (current, update) => ({ ...current, ...update }),
-    default: () => ({
-      model: 'gpt-4o',
-      sources_used: [],
-      evidence_count: 0,
-      has_safety_warnings: false,
-      processing_time_ms: 0
-    })
-  }),
-
-  // Erro (se houver)
-  error: Annotation({
-    reducer: (_, update) => update,
-    default: () => null
-  })
-});
-
-/**
- * Estado inicial para uma nova requisição
- */
-export function createInitialState(userId, conversationId, userQuery, contextType, systemMessage) {
+export function createInitialState(input = {}) {
   return {
-    messages: [],
-    user_query: userQuery,
-    userId: userId,
-    conversationId: conversationId,
-    context_type: contextType || 'geral',
-    system_message: systemMessage || 'Você é a CinthiaMed, uma assistente médica virtual.',
-    raw_evidence: {
-      semanticScholar: [],
-      europePmc: [],
-      clinicalTrials: [],
-      openFDA: [],
-      lilacs: []
-    },
-    regional_disease_info: { detected: false },
-    api_errors: [],
-    needs_drug_search: false,
-    needs_regional_search: false,
+    // ============================================
+    // INPUT - Dados de entrada
+    // ============================================
+    user_query: input.user_query || '',
+    conversation_history: input.conversation_history || [],
+
+    // ============================================
+    // ROUTER NODE - Outputs
+    // ============================================
     is_medical_question: false,
-    clinical_synthesis: '',
-    safety_warnings: [],
-    is_safe: true,
-    revision_attempts: 0,
-    metadata: {
-      model: 'gpt-4o',
-      sources_used: [],
-      evidence_count: 0,
-      has_safety_warnings: false,
-      processing_time_ms: 0
+    query_category: '',
+    regional_disease_info: {
+      detected: false,
+      disease: null,
+      priority: null,
+      region: null
     },
-    error: null
+
+    // ============================================
+    // MULTI SEARCHER NODE - Outputs
+    // ============================================
+    raw_evidence: {
+      openFDA: [],
+      lilacs: [],
+      europePMC: [],
+      clinicalTrials: [],
+      semanticScholar: []
+    },
+    formatted_evidence: '',
+    api_errors: [],
+
+    // ============================================
+    // SYNTHESIZER NODE - Outputs
+    // ============================================
+    clinical_synthesis: '',
+
+    // ============================================
+    // SAFETY CHECKER NODE - Outputs
+    // ============================================
+    is_safe: true,
+    safety_issues: [],
+    boxed_warning_issues: [],
+    dosage_issues: [],
+    protocol_conflicts: [],
+    contraindication_issues: [],
+
+    // ============================================
+    // REVISION NODE - Tracking
+    // ============================================
+    revision_count: 0,
+    revision_history: [],
+
+    // ============================================
+    // METADATA
+    // ============================================
+    start_time: new Date().toISOString(),
+    end_time: null,
+    total_processing_time_ms: 0,
+    node_execution_times: {}
   };
 }
 
-export default GraphState;
+/**
+ * Schema de estado (para documentação)
+ * Antes era Annotation.Root(), agora é apenas documentação
+ */
+export const StateSchema = {
+  // Input
+  user_query: 'string',
+  conversation_history: 'array',
+
+  // Router
+  is_medical_question: 'boolean',
+  query_category: 'string',
+  regional_disease_info: 'object',
+
+  // Multi Searcher
+  raw_evidence: 'object',
+  formatted_evidence: 'string',
+  api_errors: 'array',
+
+  // Synthesizer
+  clinical_synthesis: 'string',
+
+  // Safety Checker
+  is_safe: 'boolean',
+  safety_issues: 'array',
+  boxed_warning_issues: 'array',
+  dosage_issues: 'array',
+  protocol_conflicts: 'array',
+  contraindication_issues: 'array',
+
+  // Revision
+  revision_count: 'number',
+  revision_history: 'array',
+
+  // Metadata
+  start_time: 'string (ISO 8601)',
+  end_time: 'string (ISO 8601)',
+  total_processing_time_ms: 'number',
+  node_execution_times: 'object'
+};
+
+/**
+ * Alias para compatibilidade com código existente
+ */
+export const GraphState = StateSchema;
+
+export default {
+  createInitialState,
+  StateSchema,
+  GraphState
+};

@@ -1,157 +1,62 @@
 /**
- * LangGraph Workflow - Orquestração do fluxo de IA
+ * Medical Workflow - Orquestração do fluxo de IA
  *
- * Define o grafo de execução com nós e arestas condicionais
+ * ATUALIZADO: Removido LangGraph, usando orchestrator nativo
+ * Mantém mesma interface pública para compatibilidade com api/server.js
  */
 
-import { StateGraph, END } from '@langchain/langgraph';
-import { GraphState } from './state.js';
 import {
-  routerNode,
-  multiSearcherNode,
-  synthesizerNode,
-  safetyCheckerNode,
-  revisionNode
-} from './nodes.js';
+  createMedicalWorkflowOrchestrator,
+  runWorkflowWithStreaming as runOrchestrator
+} from './orchestrator.js';
 
 /**
- * Função de decisão: Roteamento após Router Node
- * Decide se vai buscar evidências ou pular direto para síntese
- */
-function shouldSearch(state) {
-  if (!state.is_medical_question) {
-    console.log('→ Pulando busca (não é pergunta médica)');
-    return 'synthesizer';
-  }
-
-  console.log('→ Iniciando busca de evidências');
-  return 'multi_searcher';
-}
-
-/**
- * Função de decisão: Após Safety Checker
- * Decide se a resposta precisa de revisão
- */
-function needsRevision(state) {
-  // Limitar a 2 tentativas de revisão para evitar loop infinito
-  if (state.revision_attempts >= 2) {
-    console.log('→ Máximo de revisões atingido, aprovando resposta');
-    return END;
-  }
-
-  if (!state.is_safe) {
-    console.log('→ Resposta NÃO SEGURA, enviando para revisão');
-    return 'revision';
-  }
-
-  console.log('→ Resposta aprovada pelo revisor de segurança');
-  return END;
-}
-
-/**
- * Cria e compila o workflow do LangGraph
+ * Cria o workflow (compatibilidade com interface anterior)
+ * Antes: retornava LangGraph compiled app
+ * Agora: retorna orchestrator
  */
 export function createMedicalAgentWorkflow() {
   console.log('\n🏗️  Construindo workflow do agente médico...');
+  console.log('✅ Usando Orchestrator nativo (sem LangGraph)\n');
 
-  // Criar grafo
-  const workflow = new StateGraph(GraphState);
-
-  // ADICIONAR NÓS
-  workflow.addNode('router', routerNode);
-  workflow.addNode('multi_searcher', multiSearcherNode);
-  workflow.addNode('synthesizer', synthesizerNode);
-  workflow.addNode('safety_checker', safetyCheckerNode);
-  workflow.addNode('revision', revisionNode);
-
-  // DEFINIR PONTO DE ENTRADA
-  workflow.setEntryPoint('router');
-
-  // ADICIONAR ARESTAS
-
-  // Router → Multi Searcher OU Synthesizer (condicional)
-  workflow.addConditionalEdges(
-    'router',
-    shouldSearch,
-    {
-      multi_searcher: 'multi_searcher',
-      synthesizer: 'synthesizer'
-    }
-  );
-
-  // Multi Searcher → Synthesizer (sempre)
-  workflow.addEdge('multi_searcher', 'synthesizer');
-
-  // Synthesizer → Safety Checker (sempre)
-  workflow.addEdge('synthesizer', 'safety_checker');
-
-  // Safety Checker → Revision OU END (condicional)
-  workflow.addConditionalEdges(
-    'safety_checker',
-    needsRevision,
-    {
-      revision: 'revision',
-      [END]: END
-    }
-  );
-
-  // Revision → Safety Checker (loop de revisão)
-  workflow.addEdge('revision', 'safety_checker');
-
-  // Compilar grafo
-  const app = workflow.compile();
-
-  console.log('✅ Workflow compilado com sucesso\n');
-  console.log('📊 ESTRUTURA DO GRAFO:');
-  console.log('   1. router → (decide) → multi_searcher OU synthesizer');
-  console.log('   2. multi_searcher → synthesizer');
-  console.log('   3. synthesizer → safety_checker');
-  console.log('   4. safety_checker → (decide) → revision OU END');
-  console.log('   5. revision → safety_checker (loop)');
-  console.log('');
-
-  return app;
+  return createMedicalWorkflowOrchestrator();
 }
 
 /**
  * Executa o workflow com streaming de eventos
+ * Mantém mesma assinatura para compatibilidade
+ *
+ * @param {Object} workflow - Orchestrator instance
+ * @param {Object} initialState - Estado inicial
+ * @param {Function} onEvent - Callback para eventos (opcional)
+ * @returns {Promise<Object>} Estado final
  */
-export async function runWorkflowWithStreaming(app, initialState, onEvent) {
+export async function runWorkflowWithStreaming(workflow, initialState, onEvent = null) {
   console.log('\n🚀 Iniciando execução do workflow...\n');
   console.log('='.repeat(80));
 
   const startTime = Date.now();
-  let finalState = null;
 
   try {
-    // Executar workflow com streaming
-    const stream = await app.stream(initialState, {
-      streamMode: 'values' // Stream dos valores do estado
-    });
-
-    for await (const event of stream) {
-      // Callback para cada evento (para logging/debugging)
-      if (onEvent) {
-        onEvent(event);
-      }
-
-      // Salvar último estado
-      finalState = event;
-    }
+    // Executa workflow
+    const finalState = await workflow.execute(initialState);
 
     const totalTime = Date.now() - startTime;
 
     console.log('='.repeat(80));
     console.log(`\n✅ Workflow concluído em ${totalTime}ms`);
 
-    if (finalState) {
-      finalState.metadata = {
-        ...finalState.metadata,
-        total_processing_time_ms: totalTime
-      };
+    // Callback final
+    if (onEvent) {
+      onEvent(finalState);
     }
 
-    return finalState;
+    // Adiciona metadata de timing
+    return {
+      ...finalState,
+      end_time: new Date().toISOString(),
+      total_processing_time_ms: totalTime
+    };
 
   } catch (error) {
     const errorTime = Date.now() - startTime;

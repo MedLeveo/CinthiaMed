@@ -18,12 +18,7 @@
     "passport-google-oauth20": "^2.0.0",
     "express-session": "^1.17.3",
     "express-rate-limit": "^7.1.5",
-    "@langchain/core": "^0.3.22",
-    "@langchain/langgraph": "^0.2.20",
-    "@langchain/openai": "^0.3.14",
-    "langchain": "^0.3.9",
-    "axios": "^1.7.9",
-    "zod": "^3.24.1"
+    "axios": "^1.7.9"
   },
   "engines": {
     "node": ">=18.0.0"
