@@ -10,6 +10,13 @@ import * as europePmcService from '../services/europePmcService.js';
 import * as clinicalTrialsService from '../services/clinicalTrialsService.js';
 import * as openFdaService from '../services/openFdaService.js';
 import * as lilacsService from '../services/lilacsService.js';
+import {
+  translateToEnglish,
+  detectRegionalDisease,
+  generateRegionalPriorityInstruction,
+  generateAPIErrorMessage
+} from '../utils/queryNormalizer.js';
+import { enhancedSafetyCheckerNode } from './enhancedSafetyChecker.js';
 
 // Inicializar modelo OpenAI
 const llm = new ChatOpenAI({
@@ -69,7 +76,7 @@ export async function routerNode(state) {
 
 /**
  * NÓ 2: MULTI SEARCHER
- * Executa buscas paralelas em múltiplas fontes
+ * Executa buscas paralelas em múltiplas fontes com normalização de queries
  */
 export async function multiSearcherNode(state) {
   console.log('\n🔍 NÓ MULTI SEARCHER: Executando buscas paralelas...');
@@ -88,56 +95,83 @@ export async function multiSearcherNode(state) {
   const startTime = Date.now();
   const searchPromises = [];
   const sourcesUsed = [];
+  const apiErrors = [];
 
-  // Buscar em fontes acadêmicas padrão
+  // DETECTAR DOENÇA REGIONAL
+  const regionalDiseaseInfo = detectRegionalDisease(state.user_query);
+
+  // TRADUZIR PARA INGLÊS (para APIs internacionais)
+  let englishQuery = state.user_query;
+  try {
+    englishQuery = await translateToEnglish(state.user_query);
+  } catch (error) {
+    console.warn('   ⚠️ Erro na tradução, usando query original:', error.message);
+  }
+
+  // Buscar em fontes acadêmicas padrão (INGLÊS)
   searchPromises.push(
-    semanticScholarService.searchPapers(state.user_query, 3)
+    semanticScholarService.searchPapers(englishQuery, 3)
       .then(results => {
         if (results.length > 0) sourcesUsed.push('Semantic Scholar');
         return { semanticScholar: results };
       })
-      .catch(() => ({ semanticScholar: [] }))
+      .catch(error => {
+        apiErrors.push(generateAPIErrorMessage('Semantic Scholar', error.message));
+        return { semanticScholar: [] };
+      })
   );
 
   searchPromises.push(
-    europePmcService.searchPapers(state.user_query, 3)
+    europePmcService.searchPapers(englishQuery, 3)
       .then(results => {
         if (results.length > 0) sourcesUsed.push('Europe PMC');
         return { europePmc: results };
       })
-      .catch(() => ({ europePmc: [] }))
+      .catch(error => {
+        apiErrors.push(generateAPIErrorMessage('PubMed', error.message));
+        return { europePmc: [] };
+      })
   );
 
   searchPromises.push(
-    clinicalTrialsService.searchTrials(state.user_query, 3)
+    clinicalTrialsService.searchTrials(englishQuery, 3)
       .then(results => {
         if (results.length > 0) sourcesUsed.push('ClinicalTrials.gov');
         return { clinicalTrials: results };
       })
-      .catch(() => ({ clinicalTrials: [] }))
+      .catch(error => {
+        apiErrors.push(generateAPIErrorMessage('ClinicalTrials', error.message));
+        return { clinicalTrials: [] };
+      })
   );
 
-  // Buscar na OpenFDA se relevante
+  // Buscar na OpenFDA se relevante (INGLÊS)
   if (state.needs_drug_search) {
     searchPromises.push(
-      openFdaService.searchDrugLabels(state.user_query, 3)
+      openFdaService.searchDrugLabels(englishQuery, 3)
         .then(results => {
           if (results.length > 0) sourcesUsed.push('OpenFDA');
           return { openFDA: results };
         })
-        .catch(() => ({ openFDA: [] }))
+        .catch(error => {
+          apiErrors.push(generateAPIErrorMessage('OpenFDA', error.message));
+          return { openFDA: [] };
+        })
     );
   }
 
-  // Buscar no LILACS se relevante
+  // Buscar no LILACS se relevante (PORTUGUÊS - mantém original)
   if (state.needs_regional_search) {
     searchPromises.push(
-      lilacsService.searchLilacs(state.user_query, 3)
+      lilacsService.searchLilacs(state.user_query, regionalDiseaseInfo.detected ? 5 : 3)
         .then(results => {
           if (results.length > 0) sourcesUsed.push('LILACS');
           return { lilacs: results };
         })
-        .catch(() => ({ lilacs: [] }))
+        .catch(error => {
+          apiErrors.push(generateAPIErrorMessage('LILACS', error.message));
+          return { lilacs: [] };
+        })
     );
   }
 
@@ -166,13 +200,22 @@ export async function multiSearcherNode(state) {
   console.log(`   Total de evidências: ${totalEvidence}`);
   console.log(`   Fontes utilizadas: ${sourcesUsed.join(', ')}`);
 
+  if (apiErrors.length > 0) {
+    console.log(`   ⚠️ Erros de API (${apiErrors.length}):`);
+    apiErrors.forEach(err => console.log(`      - ${err}`));
+  }
+
   return {
     raw_evidence: rawEvidence,
+    regional_disease_info: regionalDiseaseInfo,
+    api_errors: apiErrors,
     metadata: {
       ...state.metadata,
       sources_used: sourcesUsed,
       evidence_count: totalEvidence,
-      processing_time_ms: searchTime
+      processing_time_ms: searchTime,
+      regional_disease_detected: regionalDiseaseInfo.detected,
+      lilacs_articles: rawEvidence.lilacs?.length || 0
     }
   };
 }
@@ -217,11 +260,25 @@ export async function synthesizerNode(state) {
     });
   }
 
-  // LILACS (Protocolo Regional)
+  // LILACS (Protocolo Regional) - PRIORIZADO SE DOENÇA REGIONAL
   if (raw_evidence.lilacs?.length > 0) {
-    evidenceContext += '\n🌎 PROTOCOLOS REGIONAIS - LILACS (América Latina/Brasil):\n';
-    evidenceContext += '💡 Use para contextualizar recomendações para realidade brasileira\n\n';
-    raw_evidence.lilacs.slice(0, 2).forEach((article, i) => {
+    const isPrioritized = state.regional_disease_info?.detected;
+
+    evidenceContext += isPrioritized
+      ? '\n🌎⭐ PROTOCOLOS REGIONAIS - LILACS (PRIORIDADE MÁXIMA):\n'
+      : '\n🌎 PROTOCOLOS REGIONAIS - LILACS (América Latina/Brasil):\n';
+
+    evidenceContext += '💡 Use para contextualizar recomendações para realidade brasileira\n';
+
+    if (isPrioritized) {
+      evidenceContext += `🎯 DOENÇA REGIONAL DETECTADA: ${state.regional_disease_info.disease.toUpperCase()}\n`;
+      evidenceContext += `   Região: ${state.regional_disease_info.region}\n`;
+      evidenceContext += '   PRIORIZE ESTAS EVIDÊNCIAS SOBRE PROTOCOLOS INTERNACIONAIS\n';
+    }
+
+    evidenceContext += '\n';
+
+    raw_evidence.lilacs.slice(0, isPrioritized ? 3 : 2).forEach((article, i) => {
       evidenceContext += `${i + 1}. "${article.title}"\n`;
       evidenceContext += `   Autores: ${article.authors}\n`;
       evidenceContext += `   País: ${article.country} | Idioma: ${article.language}\n`;
@@ -267,11 +324,18 @@ export async function synthesizerNode(state) {
     });
   }
 
+  // Gerar instruções especiais se doença regional foi detectada
+  const regionalInstructions = state.regional_disease_info?.detected
+    ? generateRegionalPriorityInstruction(state.regional_disease_info)
+    : '';
+
   // Construir prompt para GPT-4o
   const systemPrompt = `${system_message}
 
 EVIDÊNCIAS CIENTÍFICAS ENCONTRADAS:
 ${evidenceContext}
+
+${regionalInstructions}
 
 INSTRUÇÕES IMPORTANTES:
 1. Base sua resposta nas evidências científicas fornecidas acima
@@ -310,63 +374,15 @@ IMPORTANTE: Se encontrou avisos de segurança (Boxed Warnings) da FDA, SEMPRE os
 
 /**
  * NÓ 4: SAFETY CHECKER
- * Verifica se a resposta incluiu avisos de segurança importantes
+ * (Usando Enhanced Safety Checker - importado acima)
+ * Verifica 4 critérios rigorosos:
+ * 1. Boxed Warnings omitidos
+ * 2. Dosagens incorretas
+ * 3. Conflitos de protocolo regional
+ * 4. Contraindicações não mencionadas
  */
-export async function safetyCheckerNode(state) {
-  console.log('\n🛡️ NÓ SAFETY CHECKER: Verificando segurança da resposta...');
-
-  const { raw_evidence, clinical_synthesis } = state;
-
-  // Extrair todos os avisos de segurança da FDA
-  const fdaWarnings = openFdaService.extractSafetyWarnings(raw_evidence.openFDA || []);
-
-  if (fdaWarnings.length === 0) {
-    console.log('   Sem avisos de segurança FDA. Resposta aprovada.');
-    return {
-      is_safe: true,
-      safety_warnings: []
-    };
-  }
-
-  console.log(`   Encontrados ${fdaWarnings.length} avisos FDA`);
-
-  // Verificar se os avisos foram mencionados na síntese
-  const synthesisLower = clinical_synthesis.toLowerCase();
-  const missedWarnings = [];
-
-  for (const warning of fdaWarnings) {
-    const drugNameLower = warning.drug.toLowerCase();
-
-    // Se o medicamento foi mencionado na resposta
-    if (synthesisLower.includes(drugNameLower.split('(')[0].trim().toLowerCase())) {
-      // Verificar se o aviso foi mencionado
-      const warningKeywords = ['alerta', 'aviso', 'atenção', 'cuidado', 'boxed warning', 'black box'];
-      const warningMentioned = warningKeywords.some(kw => synthesisLower.includes(kw));
-
-      if (!warningMentioned) {
-        missedWarnings.push(warning);
-      }
-    }
-  }
-
-  if (missedWarnings.length > 0) {
-    console.log(`   ⚠️ ${missedWarnings.length} avisos não foram mencionados adequadamente!`);
-    return {
-      is_safe: false,
-      safety_warnings: missedWarnings
-    };
-  }
-
-  console.log('   ✅ Todos os avisos de segurança foram incluídos');
-  return {
-    is_safe: true,
-    safety_warnings: [],
-    metadata: {
-      ...state.metadata,
-      has_safety_warnings: fdaWarnings.length > 0
-    }
-  };
-}
+// A implementação está em enhancedSafetyChecker.js
+// e é re-exportada como safetyCheckerNode
 
 /**
  * NÓ 5: REVISION NODE
@@ -418,10 +434,13 @@ Reescreva a resposta incluindo estes avisos de forma clara e destacada.`;
   };
 }
 
+// Re-export enhanced safety checker as safetyCheckerNode for compatibility
+export { enhancedSafetyCheckerNode as safetyCheckerNode };
+
 export default {
   routerNode,
   multiSearcherNode,
   synthesizerNode,
-  safetyCheckerNode,
+  safetyCheckerNode: enhancedSafetyCheckerNode,
   revisionNode
 };

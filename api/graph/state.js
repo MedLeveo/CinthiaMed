@@ -58,6 +58,18 @@ export const GraphState = Annotation.Root({
     })
   }),
 
+  // Informações sobre doença regional detectada
+  regional_disease_info: Annotation({
+    reducer: (_, update) => update,
+    default: () => ({ detected: false })
+  }),
+
+  // Erros de API (para mensagens ao usuário)
+  api_errors: Annotation({
+    reducer: (current, update) => [...current, ...update],
+    default: () => []
+  }),
+
   // Flags de roteamento
   needs_drug_search: Annotation({
     reducer: (_, update) => update,
@@ -135,6 +147,8 @@ export function createInitialState(userId, conversationId, userQuery, contextTyp
       openFDA: [],
       lilacs: []
     },
+    regional_disease_info: { detected: false },
+    api_errors: [],
     needs_drug_search: false,
     needs_regional_search: false,
     is_medical_question: false,
