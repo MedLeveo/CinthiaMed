@@ -13,8 +13,3 @@ public/src/index.js
 
 # Keep src/server/ - needed by api/server.js
 # Do NOT ignore src/server/
-
-# Ignore any other potential api folders
-**/api/**
-!api/server.js
-!api/package.json
