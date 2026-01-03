@@ -1,0 +1,456 @@
+/**
+ * Estilos Responsivos - CinthiaMed
+ *
+ * Mobile First Approach
+ * Breakpoints:
+ * - Mobile: 320px - 767px
+ * - Tablet: 768px - 1023px
+ * - Desktop: 1024px+
+ */
+
+/* ========================================
+   BASE - Mobile First (320px+)
+   ======================================== */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* Prevent horizontal scroll on mobile */
+.App {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+/* ========================================
+   MOBILE STYLES (320px - 767px)
+   ======================================== */
+
+@media screen and (max-width: 767px) {
+  /* Sidebar responsivo */
+  .sidebar {
+    position: fixed !important;
+    left: -280px !important;
+    top: 0 !important;
+    height: 100vh !important;
+    width: 280px !important;
+    z-index: 1000 !important;
+    transition: left 0.3s ease !important;
+  }
+
+  .sidebar.open {
+    left: 0 !important;
+  }
+
+  /* Overlay quando sidebar aberto */
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+  }
+
+  .sidebar-overlay.active {
+    display: block;
+  }
+
+  /* Botão hamburger */
+  .mobile-menu-button {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    width: 44px;
+    height: 44px;
+    background: #1a1f2e;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    z-index: 1001;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  .mobile-menu-button svg {
+    color: #e2e8f0;
+  }
+
+  /* Main content com padding para botão */
+  .main-content {
+    margin-left: 0 !important;
+    padding: 16px !important;
+    padding-top: 70px !important; /* Espaço para o botão */
+  }
+
+  /* Chat messages */
+  .messages-container {
+    padding: 12px !important;
+  }
+
+  .message {
+    max-width: 100% !important;
+    padding: 12px !important;
+    font-size: 14px !important;
+  }
+
+  /* Input area */
+  .input-area {
+    padding: 12px !important;
+    flex-direction: column !important;
+  }
+
+  .input-area textarea {
+    font-size: 16px !important; /* Previne zoom no iOS */
+    min-height: 44px !important; /* Touch target size */
+  }
+
+  .input-area button {
+    width: 100% !important;
+    margin-top: 8px !important;
+    min-height: 44px !important;
+  }
+
+  /* Cards e botões */
+  .card {
+    padding: 16px !important;
+    margin: 8px 0 !important;
+  }
+
+  button {
+    min-height: 44px !important; /* iOS touch target */
+    min-width: 44px !important;
+  }
+
+  /* SOAP Viewer */
+  .soap-viewer {
+    padding: 16px !important;
+  }
+
+  .soap-section {
+    margin-bottom: 16px !important;
+  }
+
+  .soap-section h3 {
+    font-size: 1.1rem !important;
+  }
+
+  /* Exam Reader */
+  .exam-reader {
+    padding: 16px !important;
+  }
+
+  .upload-area {
+    padding: 24px 16px !important;
+  }
+
+  .exam-preview img {
+    max-height: 300px !important;
+  }
+
+  /* Export Buttons */
+  .button-group {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  .export-btn {
+    width: 100% !important;
+  }
+
+  /* Histórico de conversas */
+  .conversation-list {
+    padding: 8px !important;
+  }
+
+  .conversation-item {
+    padding: 12px !important;
+    font-size: 14px !important;
+  }
+
+  /* Modais */
+  .modal-content {
+    width: 95% !important;
+    max-width: 95% !important;
+    margin: 16px !important;
+  }
+
+  /* Patient Info Form */
+  .patient-info-form input,
+  .patient-info-form select {
+    font-size: 16px !important; /* Previne zoom no iOS */
+  }
+
+  /* Scientific Sources */
+  .scientific-sources {
+    font-size: 12px !important;
+  }
+
+  /* Configurações */
+  .settings-panel {
+    padding: 16px !important;
+  }
+
+  .setting-item {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+}
+
+/* ========================================
+   TABLET STYLES (768px - 1023px)
+   ======================================== */
+
+@media screen and (min-width: 768px) and (max-width: 1023px) {
+  .sidebar {
+    width: 240px !important;
+  }
+
+  .main-content {
+    margin-left: 240px !important;
+    padding: 24px !important;
+  }
+
+  .messages-container {
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .input-area {
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  /* Botão hamburger escondido */
+  .mobile-menu-button {
+    display: none !important;
+  }
+
+  /* 2 colunas para grids */
+  .button-group {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+
+  .settings-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* ========================================
+   DESKTOP STYLES (1024px+)
+   ======================================== */
+
+@media screen and (min-width: 1024px) {
+  .sidebar {
+    width: 280px !important;
+  }
+
+  .main-content {
+    margin-left: 280px !important;
+    padding: 32px !important;
+  }
+
+  .messages-container {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .input-area {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  /* Botão hamburger escondido */
+  .mobile-menu-button {
+    display: none !important;
+  }
+
+  /* 3 colunas para grids */
+  .button-group {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 16px !important;
+  }
+
+  .settings-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
+
+/* ========================================
+   LANDSCAPE MODE (Mobile)
+   ======================================== */
+
+@media screen and (max-width: 767px) and (orientation: landscape) {
+  .main-content {
+    padding-top: 60px !important;
+  }
+
+  .sidebar {
+    width: 240px !important;
+  }
+
+  .exam-preview img {
+    max-height: 250px !important;
+  }
+}
+
+/* ========================================
+   TOUCH OPTIMIZATIONS
+   ======================================== */
+
+@media (hover: none) and (pointer: coarse) {
+  /* Dispositivos touch */
+
+  button, a, .clickable {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+  }
+
+  /* Aumentar área de toque */
+  button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Remover hover states em touch */
+  button:hover {
+    transform: none !important;
+  }
+
+  /* Scroll suave em touch */
+  .messages-container,
+  .sidebar {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+}
+
+/* ========================================
+   DARK MODE ADJUSTMENTS
+   ======================================== */
+
+@media (prefers-color-scheme: dark) {
+  .sidebar-overlay {
+    background: rgba(0, 0, 0, 0.7);
+  }
+
+  .mobile-menu-button {
+    background: #0f1419;
+    border: 1px solid #2a3142;
+  }
+}
+
+/* ========================================
+   PRINT STYLES
+   ======================================== */
+
+@media print {
+  .sidebar,
+  .mobile-menu-button,
+  .input-area,
+  .export-buttons-container {
+    display: none !important;
+  }
+
+  .main-content {
+    margin-left: 0 !important;
+    padding: 0 !important;
+  }
+
+  .message {
+    page-break-inside: avoid;
+  }
+
+  .soap-section {
+    page-break-inside: avoid;
+  }
+}
+
+/* ========================================
+   ACCESSIBILITY
+   ======================================== */
+
+/* Focus visible para keyboard navigation */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #667eea;
+  outline-offset: 2px;
+}
+
+/* Esconder visualmente mas manter para screen readers */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Reduzir movimento para quem prefere */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ========================================
+   LOADING STATES
+   ======================================== */
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #1a1f2e 25%,
+    #2a3142 50%,
+    #1a1f2e 75%
+  );
+  background-size: 200% 100%;
+  animation: loading 1.5s ease-in-out infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* ========================================
+   SAFE AREA (iPhone X+)
+   ======================================== */
+
+@supports (padding: max(0px)) {
+  .main-content {
+    padding-left: max(16px, env(safe-area-inset-left)) !important;
+    padding-right: max(16px, env(safe-area-inset-right)) !important;
+    padding-bottom: max(16px, env(safe-area-inset-bottom)) !important;
+  }
+
+  .input-area {
+    padding-bottom: max(12px, env(safe-area-inset-bottom)) !important;
+  }
+}
