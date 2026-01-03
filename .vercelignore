@@ -1,8 +1,12 @@
-# Ignore source files that are not serverless functions
-src/
+# Ignore files not needed for deployment
 *.md
 .git/
 .gitignore
 node_modules/
 build/
-public/
+public/src/components/
+public/src/App.js
+public/src/index.js
+
+# Keep src/api/ - needed by api/index.js
+# Do NOT ignore src/api/
