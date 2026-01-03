@@ -1,0 +1,8 @@
+# Ignore source files that are not serverless functions
+src/
+*.md
+.git/
+.gitignore
+node_modules/
+build/
+public/
