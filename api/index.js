@@ -9,6 +9,8 @@ import rateLimit from 'express-rate-limit';
 import crypto from 'crypto';
 import { sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail } from './services/emailService.js';
 import { buscarEvidencias, formatarParaPrompt } from './services/scientificSearch.js';
+import { createMedicalAgentWorkflow, runWorkflowWithStreaming } from './graph/workflow.js';
+import { createInitialState } from './graph/state.js';
 
 const { Pool } = pg;
 
@@ -432,7 +434,10 @@ app.get('/api/auth/google', (req, res) => {
   res.redirect(`${googleAuthUrl}?${params.toString()}`);
 });
 
-// Chat endpoint - COM AUTENTICAÇÃO (cache em memória)
+// Chat endpoint - COM AUTENTICAÇÃO E LANGGRAPH
+// Compilar workflow uma vez na inicialização
+const medicalAgentWorkflow = createMedicalAgentWorkflow();
+
 app.post('/api/chat', authMiddleware, async (req, res) => {
   try {
     const { message, assistantType = 'geral', conversationId, systemMessage } = req.body;
@@ -445,7 +450,13 @@ app.post('/api/chat', authMiddleware, async (req, res) => {
       });
     }
 
-    // Recuperar histórico do cache (chave: userId_conversationId)
+    console.log(`\n${'='.repeat(80)}`);
+    console.log(`🤖 NOVA REQUISIÇÃO - Usuário: ${userId}`);
+    console.log(`📝 Pergunta: "${message}"`);
+    console.log(`🏷️  Contexto: ${assistantType}`);
+    console.log('='.repeat(80));
+
+    // Recuperar histórico do cache
     let conversationHistory = [];
     const newConversationId = conversationId || `conv_${userId}_${Date.now()}`;
     const cacheKey = `${userId}_${newConversationId}`;
@@ -454,86 +465,116 @@ app.post('/api/chat', authMiddleware, async (req, res) => {
       conversationHistory = conversationCache.get(cacheKey);
     }
 
-    // System message dinâmico baseado no contexto do frontend
+    // System message dinâmico
     const defaultSystemMessage = 'Você é a CinthiaMed, uma assistente médica virtual altamente especializada e confiável. Base suas respostas em evidências científicas.';
-    let activeSystemMessage = systemMessage || defaultSystemMessage;
+    const activeSystemMessage = systemMessage || defaultSystemMessage;
 
-    // 🔬 BUSCA CIENTÍFICA AUTOMÁTICA
-    // Detectar se é uma pergunta médica que se beneficiaria de evidências
-    const shouldSearchEvidence = detectMedicalQuestion(message);
-    let evidenciasContext = '';
+    // Criar estado inicial para o LangGraph
+    const initialState = createInitialState(
+      userId,
+      newConversationId,
+      message,
+      assistantType,
+      activeSystemMessage
+    );
 
-    if (shouldSearchEvidence) {
-      try {
-        console.log(`🔬 Detectada pergunta médica. Buscando evidências para: "${message}"`);
+    // Adicionar histórico da conversa
+    initialState.messages = conversationHistory;
 
-        // Buscar evidências (3 resultados por fonte para não sobrecarregar)
-        const resultados = await buscarEvidencias(message, 3);
-
-        // Se encontrou resultados, formatar para incluir no contexto
-        if (resultados.resumo.totalResultados > 0) {
-          evidenciasContext = formatarParaPrompt(resultados, 2); // Máximo 2 artigos por fonte
-
-          // Adicionar instruções ao system message
-          activeSystemMessage += `\n\n# EVIDÊNCIAS CIENTÍFICAS ATUALIZADAS\n\n${evidenciasContext}\n\n**INSTRUÇÕES IMPORTANTES:**\n- Use as evidências científicas fornecidas acima para fundamentar sua resposta\n- Cite os artigos quando apropriado (ex: "Segundo estudo publicado em [ano]...")\n- Se as evidências contradizerem seu conhecimento base, priorize as evidências\n- Sempre inclua links para os artigos ao final da resposta quando relevante\n- Mantenha tom profissional e baseado em evidências`;
-
-          console.log(`✅ ${resultados.resumo.totalResultados} evidências encontradas e adicionadas ao contexto`);
-        } else {
-          console.log(`⚠️ Nenhuma evidência encontrada, prosseguindo com conhecimento base`);
-        }
-      } catch (error) {
-        // Se busca falhar, continuar sem evidências (fail gracefully)
-        console.error('❌ Erro ao buscar evidências científicas:', error.message);
-        console.log('⚠️ Continuando sem evidências externas');
+    // Executar workflow do LangGraph
+    const finalState = await runWorkflowWithStreaming(
+      medicalAgentWorkflow,
+      initialState,
+      (event) => {
+        // Log de eventos intermediários (opcional)
+        // console.log('Event:', event);
       }
-    }
+    );
 
-    // Gerar resposta com GPT
-    const messages = [
-      { role: 'system', content: activeSystemMessage },
-      ...conversationHistory,
-      { role: 'user', content: message }
-    ];
-
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o',
-      messages: messages,
-      temperature: 0.7,
-      max_tokens: 3000
-    });
-
-    const response = completion.choices[0].message.content;
+    // Extrair resposta e metadados
+    const response = finalState.clinical_synthesis;
 
     // Atualizar cache com novo histórico
-    conversationHistory.push(
-      { role: 'user', content: message },
-      { role: 'assistant', content: response }
-    );
-    conversationCache.set(cacheKey, conversationHistory);
+    const updatedHistory = finalState.messages || [];
+    conversationCache.set(cacheKey, updatedHistory);
 
-    // Limpar cache antigo (manter apenas últimas 100 conversas)
+    // Limpar cache antigo
     if (conversationCache.size > 100) {
       const firstKey = conversationCache.keys().next().value;
       conversationCache.delete(firstKey);
     }
 
+    // Preparar fontes científicas para o frontend
+    const scientificSources = [];
+
+    // Adicionar fontes do Semantic Scholar
+    if (finalState.raw_evidence?.semanticScholar?.length > 0) {
+      finalState.raw_evidence.semanticScholar.forEach(paper => {
+        scientificSources.push({
+          title: paper.title,
+          authors: paper.authors,
+          journal: 'Semantic Scholar',
+          year: paper.year,
+          url: paper.url
+        });
+      });
+    }
+
+    // Adicionar fontes do Europe PMC
+    if (finalState.raw_evidence?.europePmc?.length > 0) {
+      finalState.raw_evidence.europePmc.forEach(paper => {
+        scientificSources.push({
+          title: paper.title,
+          authors: paper.authors,
+          journal: paper.journal || 'Europe PMC',
+          year: paper.year,
+          url: paper.url
+        });
+      });
+    }
+
+    // Adicionar fontes do LILACS
+    if (finalState.raw_evidence?.lilacs?.length > 0) {
+      finalState.raw_evidence.lilacs.forEach(article => {
+        scientificSources.push({
+          title: article.title,
+          authors: article.authors,
+          journal: `${article.journal} (LILACS - ${article.country})`,
+          year: article.year,
+          url: article.url
+        });
+      });
+    }
+
+    console.log('\n📤 ENVIANDO RESPOSTA');
+    console.log(`   Fontes: ${finalState.metadata.sources_used.join(', ')}`);
+    console.log(`   Evidências: ${finalState.metadata.evidence_count}`);
+    console.log(`   Tempo total: ${finalState.metadata.total_processing_time_ms}ms`);
+    console.log(`   Avisos de segurança: ${finalState.metadata.has_safety_warnings ? 'SIM' : 'NÃO'}`);
+    console.log('='.repeat(80) + '\n');
+
     res.json({
       success: true,
       conversationId: newConversationId,
       response: response,
+      scientificSources: scientificSources,
       metadata: {
-        model: 'gpt-4o',
+        model: finalState.metadata.model,
         context: assistantType,
         timestamp: new Date().toISOString(),
-        evidenceUsed: shouldSearchEvidence && evidenciasContext.length > 0,
-        evidenceSources: shouldSearchEvidence && evidenciasContext.length > 0
-          ? ['Semantic Scholar', 'Europe PMC', 'ClinicalTrials.gov']
-          : []
+        evidenceUsed: finalState.metadata.evidence_count > 0,
+        evidenceSources: finalState.metadata.sources_used,
+        evidenceCount: finalState.metadata.evidence_count,
+        hasSafetyWarnings: finalState.metadata.has_safety_warnings,
+        processingTimeMs: finalState.metadata.total_processing_time_ms,
+        revisionAttempts: finalState.revision_attempts
       }
     });
 
   } catch (error) {
-    console.error('Chat error:', error);
+    console.error('\n❌ ERRO NO CHAT:', error);
+    console.error('Stack:', error.stack);
+
     res.status(500).json({
       success: false,
       error: 'Erro ao processar mensagem',
