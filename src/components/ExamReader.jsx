@@ -45,7 +45,9 @@ const ExamReader = ({ onAnalysisComplete }) => {
       // Usar o preview que já está em base64
       const base64Image = preview;
 
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/analyze-exam`, {
+      const apiUrl = process.env.REACT_APP_API_URL || window.location.origin;
+
+      const response = await fetch(`${apiUrl}/api/analyze-exam`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

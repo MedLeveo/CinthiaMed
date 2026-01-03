@@ -10,7 +10,7 @@
  * @returns {Promise<object>} - Prontuário formatado em SOAP
  */
 export async function formatToSOAP(transcript, patientData = {}) {
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+  const API_URL = process.env.REACT_APP_API_URL || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5000');
 
   try {
     const response = await fetch(`${API_URL}/api/format-soap`, {
@@ -32,7 +32,8 @@ export async function formatToSOAP(transcript, patientData = {}) {
     return result;
   } catch (error) {
     console.error('Erro ao formatar SOAP:', error);
-    throw error;
+    // Usar fallback local se API falhar
+    return generateSOAPLocal(transcript, patientData);
   }
 }
 
