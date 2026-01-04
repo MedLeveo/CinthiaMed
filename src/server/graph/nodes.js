@@ -4,7 +4,7 @@
  * Cada nó representa uma etapa lógica do processamento
  */
 
-import { ChatOpenAI } from '@langchain/openai';
+import OpenAI from 'openai';
 import * as semanticScholarService from '../services/semanticScholarService.js';
 import * as europePmcService from '../services/europePmcService.js';
 import * as clinicalTrialsService from '../services/clinicalTrialsService.js';
@@ -18,12 +18,9 @@ import {
 } from '../utils/queryNormalizer.js';
 import { enhancedSafetyCheckerNode } from './enhancedSafetyChecker.js';
 
-// Inicializar modelo OpenAI
-const llm = new ChatOpenAI({
-  modelName: 'gpt-4o',
-  temperature: 0.7,
-  maxTokens: 3000,
-  openAIApiKey: process.env.OPENAI_API_KEY?.replace(/\s+/g, '')
+// Inicializar OpenAI SDK
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY?.replace(/\s+/g, '')
 });
 
 /**
@@ -352,13 +349,18 @@ IMPORTANTE: Se encontrou avisos de segurança (Boxed Warnings) da FDA, SEMPRE os
   const userPrompt = user_query;
 
   // Chamar GPT-4o
-  const response = await llm.invoke([
-    { role: 'system', content: systemPrompt },
-    ...messages,
-    { role: 'user', content: userPrompt }
-  ]);
+  const response = await openai.chat.completions.create({
+    model: 'gpt-4o',
+    temperature: 0.7,
+    max_tokens: 3000,
+    messages: [
+      { role: 'system', content: systemPrompt },
+      ...messages,
+      { role: 'user', content: userPrompt }
+    ]
+  });
 
-  const synthesis = response.content;
+  const synthesis = response.choices[0].message.content;
 
   console.log(`✅ Síntese gerada (${synthesis.length} caracteres)`);
 
@@ -418,12 +420,17 @@ INSTRUÇÕES:
 
 Reescreva a resposta incluindo estes avisos de forma clara e destacada.`;
 
-  const response = await llm.invoke([
-    { role: 'system', content: system_message },
-    { role: 'user', content: revisionPrompt }
-  ]);
+  const response = await openai.chat.completions.create({
+    model: 'gpt-4o',
+    temperature: 0.7,
+    max_tokens: 3000,
+    messages: [
+      { role: 'system', content: system_message },
+      { role: 'user', content: revisionPrompt }
+    ]
+  });
 
-  const revisedSynthesis = response.content;
+  const revisedSynthesis = response.choices[0].message.content;
 
   console.log('✅ Resposta revisada com avisos de segurança');
 

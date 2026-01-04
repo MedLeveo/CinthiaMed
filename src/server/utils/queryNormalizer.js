@@ -6,13 +6,10 @@
  * - LILACS: Português/Espanhol
  */
 
-import { ChatOpenAI } from '@langchain/openai';
+import OpenAI from 'openai';
 
-const llm = new ChatOpenAI({
-  modelName: 'gpt-4o-mini', // Modelo menor para tradução rápida
-  temperature: 0.3,
-  maxTokens: 200,
-  openAIApiKey: process.env.OPENAI_API_KEY?.replace(/\s+/g, '')
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY?.replace(/\s+/g, '')
 });
 
 /**
@@ -88,11 +85,16 @@ Pergunta: ${query}
 
 Tradução:`;
 
-    const response = await llm.invoke([
-      { role: 'user', content: prompt }
-    ]);
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      temperature: 0.3,
+      max_tokens: 200,
+      messages: [
+        { role: 'user', content: prompt }
+      ]
+    });
 
-    const translation = response.content.trim();
+    const translation = response.choices[0].message.content.trim();
     console.log(`   ✅ Tradução (LLM): "${translation}"`);
 
     return translation;

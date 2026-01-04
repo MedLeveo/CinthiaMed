@@ -8,13 +8,10 @@
  * 4. Contraindicações não mencionadas
  */
 
-import { ChatOpenAI } from '@langchain/openai';
+import OpenAI from 'openai';
 
-const llm = new ChatOpenAI({
-  modelName: 'gpt-4o',
-  temperature: 0.1, // Baixa temperatura para análise rigorosa
-  maxTokens: 1500,
-  openAIApiKey: process.env.OPENAI_API_KEY?.replace(/\s+/g, '')
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY?.replace(/\s+/g, '')
 });
 
 /**
@@ -156,11 +153,16 @@ Há divergência SIGNIFICATIVA? Responda apenas SIM ou NÃO.
 Se SIM, explique brevemente o erro.`;
 
     try {
-      const response = await llm.invoke([
-        { role: 'user', content: comparisonPrompt }
-      ]);
+      const response = await openai.chat.completions.create({
+        model: 'gpt-4o',
+        temperature: 0.1,
+        max_tokens: 1500,
+        messages: [
+          { role: 'user', content: comparisonPrompt }
+        ]
+      });
 
-      const result = response.content.toUpperCase();
+      const result = response.choices[0].message.content.toUpperCase();
 
       if (result.includes('SIM')) {
         issues.push({
@@ -232,11 +234,16 @@ Por exemplo:
 Responda: SIM + explicação OU NÃO`;
 
   try {
-    const response = await llm.invoke([
-      { role: 'user', content: conflictCheckPrompt }
-    ]);
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o',
+      temperature: 0.1,
+      max_tokens: 1500,
+      messages: [
+        { role: 'user', content: conflictCheckPrompt }
+      ]
+    });
 
-    const result = response.content;
+    const result = response.choices[0].message.content;
 
     if (result.toUpperCase().includes('SIM')) {
       issues.push({
