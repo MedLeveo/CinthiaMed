@@ -7,10 +7,10 @@ import jwt from 'jsonwebtoken';
 import OpenAI from 'openai';
 import rateLimit from 'express-rate-limit';
 import crypto from 'crypto';
-import { sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail } from '../src/server/services/emailService.js';
-import { buscarEvidencias, formatarParaPrompt } from '../src/server/services/scientificSearch.js';
-import { createMedicalAgentWorkflow, runWorkflowWithStreaming } from '../src/server/graph/workflow.js';
-import { createInitialState } from '../src/server/graph/state.js';
+import { sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail } from './server/services/emailService.js';
+import { buscarEvidencias, formatarParaPrompt } from './server/services/scientificSearch.js';
+import { createMedicalAgentWorkflow, runWorkflowWithStreaming } from './server/graph/workflow.js';
+import { createInitialState } from './server/graph/state.js';
 
 const { Pool } = pg;
 

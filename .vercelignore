@@ -10,6 +10,3 @@ dist/
 public/src/components/
 public/src/App.js
 public/src/index.js
-
-# Keep src/server/ - needed by api/server.js
-# Do NOT ignore src/server/
