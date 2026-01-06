@@ -10,8 +10,7 @@ import { getSystemPrompt, MENU_TO_CONTEXT } from './config/systemPrompts';
 import ExamReader from './components/ExamReader';
 import SOAPViewer from './components/SOAPViewer';
 import { formatToSOAP, generateSOAPLocal } from './utils/soapFormatter';
-import ToolSuggestions from './components/ToolSuggestions';
-import ToolPanel from './components/ToolPanel';
+
 import ScoreCalculator from './components/ScoreCalculator';
 
 const CinthiaMed = ({ user, onLogout }) => {
@@ -30,7 +29,7 @@ const CinthiaMed = ({ user, onLogout }) => {
   // Novos estados para funcionalidades
   const [currentSOAP, setCurrentSOAP] = useState(null);
   const [showSOAPViewer, setShowSOAPViewer] = useState(false);
-  const [selectedTool, setSelectedTool] = useState(null);
+
 
   // Sistema de conversas
   const [conversations, setConversations] = useState([]);
@@ -43,8 +42,7 @@ const CinthiaMed = ({ user, onLogout }) => {
   // Estado para controlar se deve mostrar a mensagem de boas-vindas
   const [showWelcomeMessage, setShowWelcomeMessage] = useState(false);
 
-  // Estado para controlar o painel de ferramentas
-  const [showToolPanel, setShowToolPanel] = useState(true);
+
 
   // Estado para armazenar feedbacks das mensagens
   const [messageFeedbacks, setMessageFeedbacks] = useState({});
@@ -2409,31 +2407,13 @@ Gere UMA pergunta de acompanhamento relevante e útil que eu possa fazer para ap
                 </div>
               )}
 
-              {/* Tool Suggestions - Horizontal Bar */}
-              {messages.length > 0 && (() => {
-                const lastAssistantMsg = [...messages].reverse().find(
-                  msg => msg.type === 'assistant' && msg.suggestedTools && msg.suggestedTools.length > 0
-                );
-                return lastAssistantMsg ? (
-                  <div style={{
-                    width: '100%',
-                    maxWidth: 'var(--container-md)',
-                    margin: '0 auto',
-                    paddingTop: 'var(--spacing-md)',
-                  }}>
-                    <ToolSuggestions
-                      tools={lastAssistantMsg.suggestedTools}
-                      onToolSelect={setSelectedTool}
-                    />
-                  </div>
-                ) : null;
-              })()}
+
             </div>
 
             {/* Input Area */}
             <div style={{
               padding: isMobile ? 'var(--spacing-md) var(--spacing-md) var(--spacing-lg)' : 'var(--spacing-md) var(--spacing-2xl) var(--spacing-2xl)',
-              paddingRight: isMobile ? 'var(--spacing-md)' : (selectedTool ? 'calc(500px + var(--spacing-2xl))' : 'var(--spacing-2xl)'),
+              paddingRight: isMobile ? 'var(--spacing-md)' : 'var(--spacing-2xl)',
               position: 'relative',
               zIndex: 1,
               transition: 'padding-right 0.3s ease',
