@@ -1847,7 +1847,7 @@ Gere UMA pergunta de acompanhamento relevante e útil que eu possa fazer para ap
         flexDirection: 'column',
         position: 'relative',
         overflow: 'hidden',
-        marginRight: selectedTool ? (isMobile ? '0' : '500px') : '0',
+        marginRight: '0',
         transition: 'margin-right 0.3s ease',
       }}>
         {/* Background Effect */}
@@ -1873,7 +1873,7 @@ Gere UMA pergunta de acompanhamento relevante e útil que eu possa fazer para ap
             {messages.length > 0 && (
               <div style={{
                 padding: isMobile ? 'var(--spacing-sm) var(--spacing-md) var(--spacing-sm) 4.5rem' : 'var(--spacing-md) var(--spacing-2xl)',
-                paddingRight: isMobile ? 'var(--spacing-md)' : (showToolPanel && [...messages].reverse().find(msg => msg.type === 'assistant' && msg.suggestedTools && msg.suggestedTools.length > 0) ? 'calc(var(--tool-panel-width) + var(--spacing-2xl))' : 'var(--spacing-2xl)'),
+                paddingRight: isMobile ? 'var(--spacing-md)' : 'var(--spacing-2xl)',
                 borderBottom: '1px solid var(--border-primary)',
                 display: 'flex',
                 justifyContent: 'flex-end',
@@ -1970,7 +1970,7 @@ Gere UMA pergunta de acompanhamento relevante e útil que eu possa fazer para ap
               alignItems: 'center',
               justifyContent: messages.length === 0 ? 'center' : 'flex-start',
               padding: isMobile ? 'var(--spacing-md)' : 'var(--spacing-2xl) var(--spacing-md)',
-              marginRight: isMobile ? '0' : (selectedTool ? '500px' : (showToolPanel && [...messages].reverse().find(msg => msg.type === 'assistant' && msg.suggestedTools && msg.suggestedTools.length > 0) ? 'var(--tool-panel-width)' : '0')),
+              marginRight: '0',
               overflowY: 'auto',
               position: 'relative',
               zIndex: 1,
