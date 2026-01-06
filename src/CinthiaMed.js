@@ -221,8 +221,8 @@ const CinthiaMed = ({ user, onLogout }) => {
 
     // Busca em nome, descrição E categoria
     const matchesSearch = nameNormalized.includes(searchNormalized) ||
-                         descriptionNormalized.includes(searchNormalized) ||
-                         categoryNormalized.includes(searchNormalized);
+      descriptionNormalized.includes(searchNormalized) ||
+      categoryNormalized.includes(searchNormalized);
 
     const matchesCategory = selectedCategory === 'Todos' || score.category === selectedCategory;
 
@@ -533,12 +533,12 @@ const CinthiaMed = ({ user, onLogout }) => {
   };
 
   const menuItems = [
-    { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>, label: 'Nova conversa', action: 'new' },
-    { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>, label: 'Gravar Consulta Online', action: 'recording' },
-    { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>, label: 'Analisar Exame', action: 'exam-reader' },
-    { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 014-4h4a4 4 0 014 4v2"/><circle cx="12" cy="8" r="2"/></svg>, label: 'Doses Pediátricas', action: 'pediatric' },
-    { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>, label: 'Escores Clínicos', action: 'scores' },
-    { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 10h8M8 14h4"/></svg>, label: 'Calculadora Médica', action: 'calculator' },
+    { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" /></svg>, label: 'Nova conversa', action: 'new' },
+    { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="3" /><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" /></svg>, label: 'Gravar Consulta Online', action: 'recording' },
+    { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="12" y1="18" x2="12" y2="12" /><line x1="9" y1="15" x2="15" y2="15" /></svg>, label: 'Analisar Exame', action: 'exam-reader' },
+    { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="8" r="4" /><path d="M6 20v-2a4 4 0 014-4h4a4 4 0 014 4v2" /><circle cx="12" cy="8" r="2" /></svg>, label: 'Doses Pediátricas', action: 'pediatric' },
+    { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18M9 21V9" /></svg>, label: 'Escores Clínicos', action: 'scores' },
+    { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="4" y="2" width="16" height="20" rx="2" /><path d="M8 6h8M8 10h8M8 14h4" /></svg>, label: 'Calculadora Médica', action: 'calculator' },
   ];
 
   // Banco de dados de calculadoras médicas
@@ -684,25 +684,25 @@ const CinthiaMed = ({ user, onLogout }) => {
 
   const quickActions = [
     {
-      icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0016.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 002 8.5c0 2.3 1.5 4.05 3 5.5l7 7 7-7z"/></svg>,
+      icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0016.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 002 8.5c0 2.3 1.5 4.05 3 5.5l7 7 7-7z" /></svg>,
       label: 'Posologia de Medicamento',
       prompt: 'Qual a dose de ',
       assistantType: 'Assistente Geral'
     },
     {
-      icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>,
+      icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" /></svg>,
       label: 'Discutir Caso',
       prompt: 'Gostaria de discutir um caso clínico sobre ',
       assistantType: 'Assistente Geral'
     },
     {
-      icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>,
+      icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" /></svg>,
       label: 'Pesquisar CID',
       prompt: 'Qual o código CID para ',
       assistantType: 'Assistente Geral'
     },
     {
-      icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2v20M2 12h20"/></svg>,
+      icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2v20M2 12h20" /></svg>,
       label: 'Cálculo de Dose',
       prompt: 'Preciso calcular a dose de ',
       assistantType: 'Calculadoras'
@@ -924,7 +924,7 @@ Gere UMA pergunta de acompanhamento relevante e útil que eu possa fazer para ap
     let result = {};
     let alerts = [];
 
-    switch(calculatorId) {
+    switch (calculatorId) {
       case 'nefro_ckd_epi_2021':
         const creat = parseFloat(inputs.creatinina_serica);
         const idade = parseInt(inputs.idade);
@@ -1023,7 +1023,7 @@ Gere UMA pergunta de acompanhamento relevante e útil que eu possa fazer para ap
         const volume = 4 * parkPeso * scq;
         result.value = volume.toFixed(0);
         result.unit = 'mL (Ringer Lactato)';
-        result.interpretation = `${(volume/2).toFixed(0)} mL nas primeiras 8h + ${(volume/2).toFixed(0)} mL nas 16h seguintes`;
+        result.interpretation = `${(volume / 2).toFixed(0)} mL nas primeiras 8h + ${(volume / 2).toFixed(0)} mL nas 16h seguintes`;
         if (scq > 80) alerts.push('ALERTA: SCQ > 80% - altíssima mortalidade. Protocolo de queimadura maciça.');
         break;
 
@@ -1045,7 +1045,7 @@ Gere UMA pergunta de acompanhamento relevante e útil que eu possa fazer para ap
         else volHidrat = 1500 + (pedPeso - 20) * 20;
         result.value = volHidrat.toFixed(0);
         result.unit = 'mL/dia';
-        result.interpretation = `${(volHidrat/24).toFixed(0)} mL/hora`;
+        result.interpretation = `${(volHidrat / 24).toFixed(0)} mL/hora`;
         break;
 
       case 'endo_insulin_homa_ir':
@@ -1121,8 +1121,8 @@ Gere UMA pergunta de acompanhamento relevante e útil que eu possa fazer para ap
           const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
             ? 'audio/webm;codecs=opus'
             : MediaRecorder.isTypeSupported('audio/webm')
-            ? 'audio/webm'
-            : 'audio/ogg';
+              ? 'audio/webm'
+              : 'audio/ogg';
 
           const audioBlob = new Blob(audioChunks, { type: mimeType });
           console.log(`🎵 Áudio gravado: ${(audioBlob.size / 1024).toFixed(2)} KB, tipo: ${mimeType}`);
@@ -1423,10 +1423,10 @@ Gere UMA pergunta de acompanhamento relevante e útil que eu possa fazer para ap
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="2">
             {showMobileSidebar ? (
-              <path d="M18 6L6 18M6 6l12 12"/>
+              <path d="M18 6L6 18M6 6l12 12" />
             ) : (
               <>
-                <path d="M3 12h18M3 6h18M3 18h18"/>
+                <path d="M3 12h18M3 6h18M3 18h18" />
               </>
             )}
           </svg>
@@ -1740,7 +1740,7 @@ Gere UMA pergunta de acompanhamento relevante e útil que eu possa fazer para ap
                   transform: showUserMenu ? 'rotate(90deg)' : 'rotate(0deg)',
                   transition: 'transform 0.2s',
                 }}>
-                  <path d="M9 18l6-6-6-6"/>
+                  <path d="M9 18l6-6-6-6" />
                 </svg>
               </>
             )}
@@ -1785,8 +1785,8 @@ Gere UMA pergunta de acompanhamento relevante e útil que eu possa fazer para ap
                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="3"/>
-                  <path d="M12 1v6m0 6v6m5.657-13.657l-4.243 4.243m-4.243 4.243l-4.243 4.243m11.313 0l-4.243-4.243m-4.243-4.243l-4.243-4.243"/>
+                  <circle cx="12" cy="12" r="3" />
+                  <path d="M12 1v6m0 6v6m5.657-13.657l-4.243 4.243m-4.243 4.243l-4.243 4.243m11.313 0l-4.243-4.243m-4.243-4.243l-4.243-4.243" />
                 </svg>
                 Configurações
               </button>
@@ -1816,7 +1816,7 @@ Gere UMA pergunta de acompanhamento relevante e útil que eu possa fazer para ap
                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
+                  <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" />
                 </svg>
                 Sair
               </button>
@@ -1915,7 +1915,7 @@ Gere UMA pergunta de acompanhamento relevante e útil que eu possa fazer para ap
                   }}
                 >
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M12 5v14M5 12h14"/>
+                    <path d="M12 5v14M5 12h14" />
                   </svg>
                   {!isMobile && 'Nova Conversa'}
                 </button>
@@ -1978,700 +1978,626 @@ Gere UMA pergunta de acompanhamento relevante e útil que eu possa fazer para ap
               zIndex: 1,
               transition: 'margin-right 0.3s ease',
             }}>
-          {messages.length === 0 ? (
-            <div style={{
-              textAlign: 'center',
-              maxWidth: '600px',
-            }}>
-              {/* Logo Animation */}
-              <div style={{
-                marginBottom: '40px',
-                animation: 'float 3s ease-in-out infinite',
-              }}>
+              {messages.length === 0 ? (
                 <div style={{
-                  width: '140px',
-                  height: '140px',
-                  margin: '0 auto',
-                  borderRadius: '35px',
-                  background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.9) 0%, rgba(236, 72, 153, 0.9) 50%, rgba(249, 115, 22, 0.9) 100%)',
-                  backgroundSize: '200% 200%',
-                  animation: 'gradientShift 3s ease infinite, glow 2s ease-in-out infinite',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 20px 60px rgba(139, 92, 246, 0.4)',
+                  textAlign: 'center',
+                  maxWidth: '600px',
                 }}>
-                  <span style={{
-                    fontSize: '20px',
-                    fontWeight: '600',
-                    color: 'white',
-                    fontFamily: "'Outfit', sans-serif",
-                    letterSpacing: '-0.5px',
-                  }}>
-                    CinthiaMed
-                  </span>
-                </div>
-              </div>
-
-              {showWelcomeMessage && (
-                <h1 style={{
-                  fontSize: '28px',
-                  fontWeight: '300',
-                  color: '#e2e8f0',
-                  marginBottom: '20px',
-                  letterSpacing: '-0.5px',
-                }}>
-                  {isReturningUser
-                    ? `Bem-vindo(a) de volta, ${user?.name?.split(' ')[0] || 'Doutor(a)'}!`
-                    : `Bem-vindo(a) à CinthiaMed, ${user?.name?.split(' ')[0] || 'Doutor(a)'}!`
-                  }
-                </h1>
-              )}
-            </div>
-          ) : (
-            <div style={{
-              width: '100%',
-              maxWidth: 'var(--container-md)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 'var(--spacing-md)',
-              paddingRight: isMobile ? '0' : 'var(--spacing-md)',
-            }}>
-              {messages.map((msg, index) => (
-                <div
-                  key={index}
-                  style={{
-                    display: 'flex',
-                    justifyContent: msg.type === 'user' ? 'flex-end' : 'flex-start',
-                    marginBottom: '24px',
-                  }}
-                >
+                  {/* Logo Animation */}
                   <div style={{
-                    display: 'inline-flex',
-                    flexDirection: 'column',
-                    alignItems: msg.type === 'user' ? 'flex-end' : 'flex-start',
-                    maxWidth: isMobile ? '90%' : '75%',
-                    minWidth: (msg.content.length < 50 || isMobile) ? 'auto' : '300px',
+                    marginBottom: '40px',
+                    animation: 'float 3s ease-in-out infinite',
                   }}>
-                    {/* Avatar */}
                     <div style={{
-                      width: '48px',
-                      height: '48px',
-                      borderRadius: '50%',
-                      background: msg.type === 'assistant'
-                        ? 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%, #f97316 100%)'
-                        : 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+                      width: '140px',
+                      height: '140px',
+                      margin: '0 auto',
+                      borderRadius: '35px',
+                      background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.9) 0%, rgba(236, 72, 153, 0.9) 50%, rgba(249, 115, 22, 0.9) 100%)',
+                      backgroundSize: '200% 200%',
+                      animation: 'gradientShift 3s ease infinite, glow 2s ease-in-out infinite',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      flexShrink: 0,
-                      boxShadow: '0 4px 15px rgba(139, 92, 246, 0.4)',
-                      marginBottom: '8px',
-                    }}>
-                      {msg.type === 'assistant' ? (
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
-                          <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V7.3l7-3.11v8.8z"/>
-                        </svg>
-                      ) : (
-                        <span style={{
-                          fontSize: '18px',
-                          fontWeight: '600',
-                          color: 'white',
-                        }}>M</span>
-                      )}
-                    </div>
-
-                    {/* Name and Timestamp */}
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      marginBottom: '8px',
-                      fontSize: '13px',
+                      boxShadow: '0 20px 60px rgba(139, 92, 246, 0.4)',
                     }}>
                       <span style={{
+                        fontSize: '20px',
                         fontWeight: '600',
-                        color: msg.type === 'assistant' ? '#a78bfa' : '#8b5cf6',
+                        color: 'white',
+                        fontFamily: "'Outfit', sans-serif",
+                        letterSpacing: '-0.5px',
                       }}>
-                        {msg.type === 'assistant' ? msg.assistantName : msg.userName}
-                      </span>
-                      <span style={{
-                        color: '#64748b',
-                      }}>
-                        {msg.timestamp ? formatDateTime(msg.timestamp) : ''}
+                        CinthiaMed
                       </span>
                     </div>
+                  </div>
 
-                    {/* Message Bubble */}
-                    <div style={{
-                      width: '100%',
-                      padding: '16px 20px',
-                      borderRadius: '16px',
-                      backgroundColor: msg.type === 'user' ? 'rgba(139, 92, 246, 0.15)' : '#2a3142',
-                      border: msg.type === 'user' ? '1px solid rgba(139, 92, 246, 0.3)' : '1px solid #3a4152',
+                  {showWelcomeMessage && (
+                    <h1 style={{
+                      fontSize: '28px',
+                      fontWeight: '300',
                       color: '#e2e8f0',
-                      fontSize: '15px',
-                      lineHeight: '1.6',
+                      marginBottom: '20px',
+                      letterSpacing: '-0.5px',
                     }}>
-                      {msg.type === 'assistant' ? (
-                        <ReactMarkdown
-                          remarkPlugins={[remarkMath]}
-                          rehypePlugins={[rehypeKatex, rehypeSanitize]}
-                          components={{
-                            p: ({node, ...props}) => <p style={{marginBottom: '1em', margin: 0}} {...props} />,
-                            code: ({node, inline, ...props}) => (
-                              inline ?
-                                <code style={{
-                                  backgroundColor: 'rgba(139, 92, 246, 0.2)',
-                                  padding: '2px 6px',
-                                  borderRadius: '4px',
-                                  fontSize: '14px'
-                                }} {...props} /> :
-                                <code style={{
-                                  display: 'block',
-                                  backgroundColor: '#1a1f2e',
-                                  padding: '12px',
-                                  borderRadius: '8px',
-                                  overflowX: 'auto',
-                                  fontSize: '14px',
-                                  marginBottom: '1em'
-                                }} {...props} />
-                            )
-                          }}
-                        >
-                          {msg.content}
-                        </ReactMarkdown>
-                      ) : msg.content}
-                    </div>
-
-                    {/* Action Buttons - Only for assistant messages */}
-                    {msg.type === 'assistant' && (
-                      <div style={{
-                        display: 'flex',
-                        gap: '8px',
-                        marginTop: '8px',
-                        alignItems: 'center'
-                      }}>
-                        <button
-                          onClick={() => {
-                            navigator.clipboard.writeText(msg.content);
-                            showToastMessage('Resposta copiada!');
-                          }}
-                          style={{
-                            padding: '6px 12px',
-                            backgroundColor: 'transparent',
-                            border: '1px solid #3a4152',
-                            borderRadius: '8px',
-                            color: '#94a3b8',
-                            fontSize: '12px',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            transition: 'all 0.2s',
-                            fontFamily: "'Outfit', sans-serif"
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#3a4152';
-                            e.currentTarget.style.color = '#e2e8f0';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = 'transparent';
-                            e.currentTarget.style.color = '#94a3b8';
-                          }}
-                        >
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                          </svg>
-                          Copiar
-                        </button>
-                        <button
-                          onClick={() => handleMessageFeedback(index, true)}
-                          style={{
-                            padding: 'var(--spacing-xs) var(--spacing-sm)',
-                            backgroundColor: messageFeedbacks[index] === 'positive' ? 'rgba(16, 185, 129, 0.15)' : 'transparent',
-                            border: `1px solid ${messageFeedbacks[index] === 'positive' ? 'var(--success)' : 'var(--border-accent)'}`,
-                            borderRadius: 'var(--spacing-xs)',
-                            color: messageFeedbacks[index] === 'positive' ? 'var(--success)' : 'var(--text-muted)',
-                            fontSize: 'var(--font-xs)',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 'var(--spacing-xs)',
-                            transition: 'all 0.2s',
-                            fontFamily: "'Outfit', sans-serif",
-                            minHeight: 'var(--touch-min)',
-                          }}
-                          onMouseEnter={(e) => {
-                            if (messageFeedbacks[index] !== 'positive') {
-                              e.currentTarget.style.backgroundColor = 'rgba(16, 185, 129, 0.1)';
-                              e.currentTarget.style.borderColor = 'var(--success)';
-                              e.currentTarget.style.color = 'var(--success)';
-                            }
-                          }}
-                          onMouseLeave={(e) => {
-                            if (messageFeedbacks[index] !== 'positive') {
-                              e.currentTarget.style.backgroundColor = 'transparent';
-                              e.currentTarget.style.borderColor = 'var(--border-accent)';
-                              e.currentTarget.style.color = 'var(--text-muted)';
-                            }
-                          }}
-                        >
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill={messageFeedbacks[index] === 'positive' ? 'var(--success)' : 'none'} stroke="currentColor" strokeWidth="2">
-                            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
-                          </svg>
-                          Útil
-                        </button>
-                        <button
-                          onClick={() => handleMessageFeedback(index, false)}
-                          style={{
-                            padding: 'var(--spacing-xs) var(--spacing-sm)',
-                            backgroundColor: messageFeedbacks[index] === 'negative' ? 'rgba(239, 68, 68, 0.15)' : 'transparent',
-                            border: `1px solid ${messageFeedbacks[index] === 'negative' ? 'var(--error)' : 'var(--border-accent)'}`,
-                            borderRadius: 'var(--spacing-xs)',
-                            color: messageFeedbacks[index] === 'negative' ? 'var(--error)' : 'var(--text-muted)',
-                            fontSize: 'var(--font-xs)',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 'var(--spacing-xs)',
-                            transition: 'all 0.2s',
-                            fontFamily: "'Outfit', sans-serif",
-                            minHeight: 'var(--touch-min)',
-                          }}
-                          onMouseEnter={(e) => {
-                            if (messageFeedbacks[index] !== 'negative') {
-                              e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
-                              e.currentTarget.style.borderColor = 'var(--error)';
-                              e.currentTarget.style.color = 'var(--error)';
-                            }
-                          }}
-                          onMouseLeave={(e) => {
-                            if (messageFeedbacks[index] !== 'negative') {
-                              e.currentTarget.style.backgroundColor = 'transparent';
-                              e.currentTarget.style.borderColor = 'var(--border-accent)';
-                              e.currentTarget.style.color = 'var(--text-muted)';
-                            }
-                          }}
-                        >
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill={messageFeedbacks[index] === 'negative' ? 'var(--error)' : 'none'} stroke="currentColor" strokeWidth="2" transform="scale(1, -1)">
-                            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
-                          </svg>
-                          Não útil
-                        </button>
-                      </div>
-                    )}
-
-                    {/* Scientific Sources */}
-                    {msg.sources && msg.sources.length > 0 && (
-                      <div style={{
-                        width: '100%',
-                        marginTop: '12px',
-                        padding: '12px 16px',
-                        backgroundColor: '#1a1f2e',
-                        borderRadius: '12px',
-                        border: '1px solid #2a3142',
-                      }}>
-                        <div style={{
-                          fontSize: '12px',
-                          fontWeight: '600',
-                          color: '#8b5cf6',
-                          marginBottom: '8px',
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.5px',
-                        }}>
-                          📚 Fontes Científicas:
-                        </div>
-                        {msg.sources.map((source, idx) => (
-                          <div key={idx} style={{
-                            marginBottom: idx < msg.sources.length - 1 ? '8px' : '0',
-                            paddingBottom: idx < msg.sources.length - 1 ? '8px' : '0',
-                            borderBottom: idx < msg.sources.length - 1 ? '1px solid #2a3142' : 'none',
-                          }}>
-                            <a
-                              href={source.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              style={{
-                                fontSize: '13px',
-                                color: '#64748b',
-                                textDecoration: 'none',
-                                display: 'block',
-                                lineHeight: '1.5',
-                              }}
-                              onMouseEnter={(e) => e.target.style.color = '#8b5cf6'}
-                              onMouseLeave={(e) => e.target.style.color = '#64748b'}
-                            >
-                              <strong style={{ color: '#e2e8f0' }}>{source.title}</strong><br/>
-                              {source.authors} - {source.journal} ({source.year})
-                            </a>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                      {isReturningUser
+                        ? `Bem-vindo(a) de volta, ${user?.name?.split(' ')[0] || 'Doutor(a)'}!`
+                        : `Bem-vindo(a) à CinthiaMed, ${user?.name?.split(' ')[0] || 'Doutor(a)'}!`
+                      }
+                    </h1>
+                  )}
                 </div>
-              ))}
-
-
-              {/* Indicador de "pensando" */}
-              {isThinking && (
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'flex-start',
-                    marginBottom: '24px',
-                  }}
-                >
-                  <div style={{
-                    display: 'inline-flex',
-                    flexDirection: 'column',
-                    alignItems: 'flex-start',
-                    maxWidth: '75%',
-                  }}>
-                    {/* Avatar */}
-                    <div style={{
-                      width: '48px',
-                      height: '48px',
-                      borderRadius: '50%',
-                      background: 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%, #f97316 100%)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0,
-                      boxShadow: '0 4px 15px rgba(139, 92, 246, 0.4)',
-                      marginBottom: '8px',
-                    }}>
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
-                        <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V7.3l7-3.11v8.8z"/>
-                      </svg>
-                    </div>
-
-                    {/* Name */}
-                    <div style={{
-                      fontSize: '13px',
-                      fontWeight: '600',
-                      color: '#a78bfa',
-                      marginBottom: '8px',
-                    }}>
-                      CinthiaMed IA
-                    </div>
-
-                    {/* Thinking Bubble */}
-                    <div style={{
-                      padding: '16px 20px',
-                      borderRadius: '16px',
-                      backgroundColor: '#2a3142',
-                      border: '1px solid #3a4152',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                    }}>
-                      <div style={{
+              ) : (
+                <div style={{
+                  width: '100%',
+                  maxWidth: 'var(--container-md)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 'var(--spacing-md)',
+                  paddingRight: isMobile ? '0' : 'var(--spacing-md)',
+                }}>
+                  {messages.map((msg, index) => (
+                    <div
+                      key={index}
+                      style={{
                         display: 'flex',
-                        gap: '4px',
-                        alignItems: 'center',
+                        justifyContent: msg.type === 'user' ? 'flex-end' : 'flex-start',
+                        marginBottom: '24px',
+                      }}
+                    >
+                      <div style={{
+                        display: 'inline-flex',
+                        flexDirection: 'column',
+                        alignItems: msg.type === 'user' ? 'flex-end' : 'flex-start',
+                        maxWidth: isMobile ? '90%' : '75%',
+                        minWidth: (msg.content.length < 50 || isMobile) ? 'auto' : '300px',
                       }}>
+                        {/* Avatar */}
                         <div style={{
-                          width: '8px',
-                          height: '8px',
+                          width: '48px',
+                          height: '48px',
                           borderRadius: '50%',
-                          backgroundColor: '#8b5cf6',
-                          animation: 'pulse 1.4s ease-in-out 0s infinite',
-                        }} />
+                          background: msg.type === 'assistant'
+                            ? 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%, #f97316 100%)'
+                            : 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0,
+                          boxShadow: '0 4px 15px rgba(139, 92, 246, 0.4)',
+                          marginBottom: '8px',
+                        }}>
+                          {msg.type === 'assistant' ? (
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                              <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V7.3l7-3.11v8.8z" />
+                            </svg>
+                          ) : (
+                            <span style={{
+                              fontSize: '18px',
+                              fontWeight: '600',
+                              color: 'white',
+                            }}>M</span>
+                          )}
+                        </div>
+
+                        {/* Name and Timestamp */}
                         <div style={{
-                          width: '8px',
-                          height: '8px',
-                          borderRadius: '50%',
-                          backgroundColor: '#8b5cf6',
-                          animation: 'pulse 1.4s ease-in-out 0.2s infinite',
-                        }} />
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          marginBottom: '8px',
+                          fontSize: '13px',
+                        }}>
+                          <span style={{
+                            fontWeight: '600',
+                            color: msg.type === 'assistant' ? '#a78bfa' : '#8b5cf6',
+                          }}>
+                            {msg.type === 'assistant' ? msg.assistantName : msg.userName}
+                          </span>
+                          <span style={{
+                            color: '#64748b',
+                          }}>
+                            {msg.timestamp ? formatDateTime(msg.timestamp) : ''}
+                          </span>
+                        </div>
+
+                        {/* Message Bubble */}
                         <div style={{
-                          width: '8px',
-                          height: '8px',
-                          borderRadius: '50%',
-                          backgroundColor: '#8b5cf6',
-                          animation: 'pulse 1.4s ease-in-out 0.4s infinite',
-                        }} />
+                          width: '100%',
+                          padding: '16px 20px',
+                          borderRadius: '16px',
+                          backgroundColor: msg.type === 'user' ? 'rgba(139, 92, 246, 0.15)' : '#2a3142',
+                          border: msg.type === 'user' ? '1px solid rgba(139, 92, 246, 0.3)' : '1px solid #3a4152',
+                          color: '#e2e8f0',
+                          fontSize: '15px',
+                          lineHeight: '1.6',
+                        }}>
+                          {msg.type === 'assistant' ? (
+                            <ReactMarkdown
+                              remarkPlugins={[remarkMath]}
+                              rehypePlugins={[rehypeKatex, rehypeSanitize]}
+                              components={{
+                                p: ({ node, ...props }) => <p style={{ marginBottom: '1em', margin: 0 }} {...props} />,
+                                code: ({ node, inline, ...props }) => (
+                                  inline ?
+                                    <code style={{
+                                      backgroundColor: 'rgba(139, 92, 246, 0.2)',
+                                      padding: '2px 6px',
+                                      borderRadius: '4px',
+                                      fontSize: '14px'
+                                    }} {...props} /> :
+                                    <code style={{
+                                      display: 'block',
+                                      backgroundColor: '#1a1f2e',
+                                      padding: '12px',
+                                      borderRadius: '8px',
+                                      overflowX: 'auto',
+                                      fontSize: '14px',
+                                      marginBottom: '1em'
+                                    }} {...props} />
+                                )
+                              }}
+                            >
+                              {msg.content}
+                            </ReactMarkdown>
+                          ) : msg.content}
+                        </div>
+
+                        {/* Action Buttons - Only for assistant messages */}
+                        {msg.type === 'assistant' && (
+                          <div style={{
+                            display: 'flex',
+                            gap: '8px',
+                            marginTop: '8px',
+                            alignItems: 'center'
+                          }}>
+                            <button
+                              onClick={() => {
+                                navigator.clipboard.writeText(msg.content);
+                                showToastMessage('Resposta copiada!');
+                              }}
+                              style={{
+                                padding: '6px 12px',
+                                backgroundColor: 'transparent',
+                                border: '1px solid #3a4152',
+                                borderRadius: '8px',
+                                color: '#94a3b8',
+                                fontSize: '12px',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                transition: 'all 0.2s',
+                                fontFamily: "'Outfit', sans-serif"
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = '#3a4152';
+                                e.currentTarget.style.color = '#e2e8f0';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = 'transparent';
+                                e.currentTarget.style.color = '#94a3b8';
+                              }}
+                            >
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                              </svg>
+                              Copiar
+                            </button>
+                            <button
+                              onClick={() => handleMessageFeedback(index, true)}
+                              style={{
+                                padding: 'var(--spacing-xs) var(--spacing-sm)',
+                                backgroundColor: messageFeedbacks[index] === 'positive' ? 'rgba(16, 185, 129, 0.15)' : 'transparent',
+                                border: `1px solid ${messageFeedbacks[index] === 'positive' ? 'var(--success)' : 'var(--border-accent)'}`,
+                                borderRadius: 'var(--spacing-xs)',
+                                color: messageFeedbacks[index] === 'positive' ? 'var(--success)' : 'var(--text-muted)',
+                                fontSize: 'var(--font-xs)',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 'var(--spacing-xs)',
+                                transition: 'all 0.2s',
+                                fontFamily: "'Outfit', sans-serif",
+                                minHeight: 'var(--touch-min)',
+                              }}
+                              onMouseEnter={(e) => {
+                                if (messageFeedbacks[index] !== 'positive') {
+                                  e.currentTarget.style.backgroundColor = 'rgba(16, 185, 129, 0.1)';
+                                  e.currentTarget.style.borderColor = 'var(--success)';
+                                  e.currentTarget.style.color = 'var(--success)';
+                                }
+                              }}
+                              onMouseLeave={(e) => {
+                                if (messageFeedbacks[index] !== 'positive') {
+                                  e.currentTarget.style.backgroundColor = 'transparent';
+                                  e.currentTarget.style.borderColor = 'var(--border-accent)';
+                                  e.currentTarget.style.color = 'var(--text-muted)';
+                                }
+                              }}
+                            >
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill={messageFeedbacks[index] === 'positive' ? 'var(--success)' : 'none'} stroke="currentColor" strokeWidth="2">
+                                <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
+                              </svg>
+                              Útil
+                            </button>
+                            <button
+                              onClick={() => handleMessageFeedback(index, false)}
+                              style={{
+                                padding: 'var(--spacing-xs) var(--spacing-sm)',
+                                backgroundColor: messageFeedbacks[index] === 'negative' ? 'rgba(239, 68, 68, 0.15)' : 'transparent',
+                                border: `1px solid ${messageFeedbacks[index] === 'negative' ? 'var(--error)' : 'var(--border-accent)'}`,
+                                borderRadius: 'var(--spacing-xs)',
+                                color: messageFeedbacks[index] === 'negative' ? 'var(--error)' : 'var(--text-muted)',
+                                fontSize: 'var(--font-xs)',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 'var(--spacing-xs)',
+                                transition: 'all 0.2s',
+                                fontFamily: "'Outfit', sans-serif",
+                                minHeight: 'var(--touch-min)',
+                              }}
+                              onMouseEnter={(e) => {
+                                if (messageFeedbacks[index] !== 'negative') {
+                                  e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
+                                  e.currentTarget.style.borderColor = 'var(--error)';
+                                  e.currentTarget.style.color = 'var(--error)';
+                                }
+                              }}
+                              onMouseLeave={(e) => {
+                                if (messageFeedbacks[index] !== 'negative') {
+                                  e.currentTarget.style.backgroundColor = 'transparent';
+                                  e.currentTarget.style.borderColor = 'var(--border-accent)';
+                                  e.currentTarget.style.color = 'var(--text-muted)';
+                                }
+                              }}
+                            >
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill={messageFeedbacks[index] === 'negative' ? 'var(--error)' : 'none'} stroke="currentColor" strokeWidth="2" transform="scale(1, -1)">
+                                <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
+                              </svg>
+                              Não útil
+                            </button>
+                          </div>
+                        )}
+
+                        {/* Scientific Sources */}
+                        {msg.sources && msg.sources.length > 0 && (
+                          <div style={{
+                            width: '100%',
+                            marginTop: '12px',
+                            padding: '12px 16px',
+                            backgroundColor: '#1a1f2e',
+                            borderRadius: '12px',
+                            border: '1px solid #2a3142',
+                          }}>
+                            <div style={{
+                              fontSize: '12px',
+                              fontWeight: '600',
+                              color: '#8b5cf6',
+                              marginBottom: '8px',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.5px',
+                            }}>
+                              📚 Fontes Científicas:
+                            </div>
+                            {msg.sources.map((source, idx) => (
+                              <div key={idx} style={{
+                                marginBottom: idx < msg.sources.length - 1 ? '8px' : '0',
+                                paddingBottom: idx < msg.sources.length - 1 ? '8px' : '0',
+                                borderBottom: idx < msg.sources.length - 1 ? '1px solid #2a3142' : 'none',
+                              }}>
+                                <a
+                                  href={source.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  style={{
+                                    fontSize: '13px',
+                                    color: '#64748b',
+                                    textDecoration: 'none',
+                                    display: 'block',
+                                    lineHeight: '1.5',
+                                  }}
+                                  onMouseEnter={(e) => e.target.style.color = '#8b5cf6'}
+                                  onMouseLeave={(e) => e.target.style.color = '#64748b'}
+                                >
+                                  <strong style={{ color: '#e2e8f0' }}>{source.title}</strong><br />
+                                  {source.authors} - {source.journal} ({source.year})
+                                </a>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                      <span style={{
-                        fontSize: '14px',
-                        color: '#94a3b8',
-                        fontStyle: 'italic',
-                      }}>
-                        Analisando estudos científicos...
-                      </span>
                     </div>
-                  </div>
+                  ))}
+
+
+                  {/* Indicador de "pensando" */}
+                  {isThinking && (
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'flex-start',
+                        marginBottom: '24px',
+                      }}
+                    >
+                      <div style={{
+                        display: 'inline-flex',
+                        flexDirection: 'column',
+                        alignItems: 'flex-start',
+                        maxWidth: '75%',
+                      }}>
+                        {/* Avatar */}
+                        <div style={{
+                          width: '48px',
+                          height: '48px',
+                          borderRadius: '50%',
+                          background: 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%, #f97316 100%)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0,
+                          boxShadow: '0 4px 15px rgba(139, 92, 246, 0.4)',
+                          marginBottom: '8px',
+                        }}>
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                            <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V7.3l7-3.11v8.8z" />
+                          </svg>
+                        </div>
+
+                        {/* Name */}
+                        <div style={{
+                          fontSize: '13px',
+                          fontWeight: '600',
+                          color: '#a78bfa',
+                          marginBottom: '8px',
+                        }}>
+                          CinthiaMed IA
+                        </div>
+
+                        {/* Thinking Bubble */}
+                        <div style={{
+                          padding: '16px 20px',
+                          borderRadius: '16px',
+                          backgroundColor: '#2a3142',
+                          border: '1px solid #3a4152',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                        }}>
+                          <div style={{
+                            display: 'flex',
+                            gap: '4px',
+                            alignItems: 'center',
+                          }}>
+                            <div style={{
+                              width: '8px',
+                              height: '8px',
+                              borderRadius: '50%',
+                              backgroundColor: '#8b5cf6',
+                              animation: 'pulse 1.4s ease-in-out 0s infinite',
+                            }} />
+                            <div style={{
+                              width: '8px',
+                              height: '8px',
+                              borderRadius: '50%',
+                              backgroundColor: '#8b5cf6',
+                              animation: 'pulse 1.4s ease-in-out 0.2s infinite',
+                            }} />
+                            <div style={{
+                              width: '8px',
+                              height: '8px',
+                              borderRadius: '50%',
+                              backgroundColor: '#8b5cf6',
+                              animation: 'pulse 1.4s ease-in-out 0.4s infinite',
+                            }} />
+                          </div>
+                          <span style={{
+                            fontSize: '14px',
+                            color: '#94a3b8',
+                            fontStyle: 'italic',
+                          }}>
+                            Analisando estudos científicos...
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
-            </div>
-          )}
-          </div>
 
-          {/* Tool Suggestions - Right Side Panel - Apenas da última mensagem do assistente */}
-          {!isMobile && showToolPanel && (() => {
-            // Encontrar a última mensagem do assistente com ferramentas
-            const lastAssistantMsg = [...messages].reverse().find(
-              msg => msg.type === 'assistant' && msg.suggestedTools && msg.suggestedTools.length > 0
-            );
-
-            return lastAssistantMsg ? (
-              <div style={{
-                position: 'fixed',
-                top: '0',
-                right: '0',
-                bottom: '0',
-                width: 'var(--tool-panel-width)',
-                backgroundColor: 'var(--bg-secondary)',
-                borderLeft: '1px solid var(--border-primary)',
-                padding: 'var(--spacing-lg)',
-                overflowY: 'auto',
-                zIndex: 100,
-                boxShadow: '-0.25rem 0 1.5rem rgba(0, 0, 0, 0.3)',
-                transition: 'transform 0.3s ease',
-              }}>
-                <div style={{
-                  marginBottom: 'var(--spacing-md)',
-                  paddingBottom: 'var(--spacing-md)',
-                  borderBottom: '1px solid var(--border-primary)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                }}>
-                  <div>
-                    <h3 style={{
-                      fontSize: 'var(--font-md)',
-                      fontWeight: '600',
-                      color: 'var(--text-primary)',
-                      margin: 0,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 'var(--spacing-xs)'
-                    }}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" strokeWidth="2">
-                        <path d="M4 6h16M4 12h16M4 18h16"/>
-                      </svg>
-                      Ferramentas Clínicas
-                    </h3>
-                    <p style={{
-                      fontSize: 'var(--font-sm)',
-                      color: 'var(--text-disabled)',
-                      margin: '0.25rem 0 0 0'
-                    }}>
-                      Recursos recomendados
-                    </p>
+              {/* Tool Suggestions - Horizontal Bar */}
+              {messages.length > 0 && (() => {
+                const lastAssistantMsg = [...messages].reverse().find(
+                  msg => msg.type === 'assistant' && msg.suggestedTools && msg.suggestedTools.length > 0
+                );
+                return lastAssistantMsg ? (
+                  <div style={{
+                    width: '100%',
+                    maxWidth: 'var(--container-md)',
+                    margin: '0 auto',
+                    paddingTop: 'var(--spacing-md)',
+                  }}>
+                    <ToolSuggestions
+                      tools={lastAssistantMsg.suggestedTools}
+                      onToolSelect={setSelectedTool}
+                    />
                   </div>
-                  <button
-                    onClick={() => setShowToolPanel(false)}
+                ) : null;
+              })()}
+            </div>
+
+            {/* Input Area */}
+            <div style={{
+              padding: isMobile ? 'var(--spacing-md) var(--spacing-md) var(--spacing-lg)' : 'var(--spacing-md) var(--spacing-2xl) var(--spacing-2xl)',
+              paddingRight: isMobile ? 'var(--spacing-md)' : (selectedTool ? 'calc(500px + var(--spacing-2xl))' : 'var(--spacing-2xl)'),
+              position: 'relative',
+              zIndex: 1,
+              transition: 'padding-right 0.3s ease',
+            }}>
+              <div style={{
+                width: '100%',
+                maxWidth: 'var(--container-md)',
+                margin: '0 auto',
+              }}>
+                {/* Input Box */}
+                <div style={{
+                  backgroundColor: 'var(--bg-elevated)',
+                  borderRadius: 'var(--spacing-md)',
+                  border: '1px solid var(--border-accent)',
+                  padding: 'var(--spacing-md) var(--spacing-md)',
+                  marginBottom: 'var(--spacing-md)',
+                  boxShadow: '0 0.625rem 2.5rem rgba(0, 0, 0, 0.3)',
+                }}>
+                  <input
+                    type="text"
+                    placeholder={assistantPlaceholders[selectedAssistant] || 'Como posso lhe ajudar?'}
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                     style={{
-                      padding: 'var(--spacing-xs)',
+                      width: '100%',
                       backgroundColor: 'transparent',
-                      border: '1px solid var(--border-accent)',
-                      borderRadius: 'var(--spacing-xs)',
-                      color: 'var(--text-muted)',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      transition: 'all 0.2s',
-                      minWidth: 'var(--touch-min)',
+                      border: 'none',
+                      outline: 'none',
+                      color: 'var(--text-primary)',
+                      fontSize: 'var(--font-md)',
+                      fontFamily: "'Outfit', sans-serif",
                       minHeight: 'var(--touch-min)',
                     }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
-                      e.currentTarget.style.borderColor = 'var(--error)';
-                      e.currentTarget.style.color = 'var(--error)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = 'transparent';
-                      e.currentTarget.style.borderColor = 'var(--border-accent)';
-                      e.currentTarget.style.color = 'var(--text-muted)';
-                    }}
-                    title="Fechar painel"
-                  >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M18 6L6 18M6 6l12 12"/>
-                    </svg>
-                  </button>
-                </div>
-                <ToolSuggestions
-                  tools={lastAssistantMsg.suggestedTools}
-                  onToolSelect={setSelectedTool}
-                />
-              </div>
-            ) : null;
-          })()}
-
-          {/* Input Area */}
-          <div style={{
-            padding: isMobile ? 'var(--spacing-md) var(--spacing-md) var(--spacing-lg)' : 'var(--spacing-md) var(--spacing-2xl) var(--spacing-2xl)',
-            paddingRight: isMobile ? 'var(--spacing-md)' : (selectedTool ? 'calc(500px + var(--spacing-2xl))' : 'var(--spacing-2xl)'),
-            position: 'relative',
-            zIndex: 1,
-            transition: 'padding-right 0.3s ease',
-          }}>
-            <div style={{
-              width: '100%',
-              maxWidth: 'var(--container-md)',
-              margin: '0 auto',
-            }}>
-              {/* Input Box */}
-              <div style={{
-                backgroundColor: 'var(--bg-elevated)',
-                borderRadius: 'var(--spacing-md)',
-                border: '1px solid var(--border-accent)',
-                padding: 'var(--spacing-md) var(--spacing-md)',
-                marginBottom: 'var(--spacing-md)',
-                boxShadow: '0 0.625rem 2.5rem rgba(0, 0, 0, 0.3)',
-              }}>
-                <input
-                  type="text"
-                  placeholder={assistantPlaceholders[selectedAssistant] || 'Como posso lhe ajudar?'}
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                  style={{
-                    width: '100%',
-                    backgroundColor: 'transparent',
-                    border: 'none',
-                    outline: 'none',
-                    color: 'var(--text-primary)',
-                    fontSize: 'var(--font-md)',
-                    fontFamily: "'Outfit', sans-serif",
-                    minHeight: 'var(--touch-min)',
-                  }}
-                />
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  marginTop: 'var(--spacing-md)',
-                  paddingTop: 'var(--spacing-sm)',
-                  borderTop: '1px solid var(--border-accent)',
-                  flexWrap: isMobile ? 'wrap' : 'nowrap',
-                  gap: 'var(--spacing-sm)',
-                }}>
+                  />
                   <div style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '8px',
+                    justifyContent: 'space-between',
+                    marginTop: 'var(--spacing-md)',
+                    paddingTop: 'var(--spacing-sm)',
+                    borderTop: '1px solid var(--border-accent)',
+                    flexWrap: isMobile ? 'wrap' : 'nowrap',
+                    gap: 'var(--spacing-sm)',
                   }}>
-                    <select
-                      value={selectedAssistant}
-                      onChange={(e) => setSelectedAssistant(e.target.value)}
-                      style={{
-                        backgroundColor: 'transparent',
-                        border: 'none',
-                        color: '#64748b',
-                        fontSize: '14px',
-                        cursor: 'pointer',
-                        outline: 'none',
-                        fontFamily: "'Outfit', sans-serif",
-                      }}
-                    >
-                      <option value="Assistente Geral">Assistente Geral</option>
-                      <option value="Calculadoras">Calculadora Conversacional</option>
-                      <option value="Pediatria">Pediatria</option>
-                    </select>
-                    {selectedAssistant === 'Calculadoras' && (
-                      <div style={{
-                        width: '20px',
-                        height: '20px',
-                        borderRadius: '50%',
-                        background: 'linear-gradient(135deg, #8b5cf6, #ec4899)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
-                          <polyline points="20 6 9 17 4 12"/>
-                        </svg>
-                      </div>
-                    )}
-                  </div>
-                  <button
-                    onClick={handleSendMessage}
-                    style={{
-                      width: '36px',
-                      height: '36px',
-                      borderRadius: '10px',
-                      background: inputValue.trim()
-                        ? 'linear-gradient(135deg, #8b5cf6, #ec4899)'
-                        : '#334155',
-                      border: 'none',
-                      cursor: inputValue.trim() ? 'pointer' : 'default',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      transition: 'all 0.2s',
-                      boxShadow: inputValue.trim()
-                        ? '0 4px 15px rgba(139, 92, 246, 0.4)'
-                        : 'none',
-                    }}
-                  >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                      <path d="M22 2L11 13M22 2L15 22L11 13L2 9L22 2Z" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-
-              {/* Quick Actions */}
-              <div style={{
-                display: 'flex',
-                gap: '12px',
-                flexWrap: 'wrap',
-                justifyContent: 'center',
-              }}>
-                {quickActions.map((action, index) => (
-                  <button
-                    key={index}
-                    onClick={() => {
-                      setInputValue(action.prompt);
-                      setSelectedAssistant(action.assistantType);
-                    }}
-                    style={{
+                    <div style={{
                       display: 'flex',
                       alignItems: 'center',
                       gap: '8px',
-                      padding: '10px 16px',
-                      backgroundColor: '#1e293b',
-                      border: '1px solid #334155',
-                      borderRadius: '12px',
-                      color: '#94a3b8',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                      fontSize: '14px',
-                      fontWeight: '500',
-                      fontFamily: "'Outfit', sans-serif",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = '#8b5cf6';
-                      e.currentTarget.style.backgroundColor = 'rgba(139, 92, 246, 0.1)';
-                      e.currentTarget.style.transform = 'translateY(-2px)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = '#334155';
-                      e.currentTarget.style.backgroundColor = '#1e293b';
-                      e.currentTarget.style.transform = 'translateY(0)';
-                    }}
-                  >
-                    <span style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      opacity: 0.9,
                     }}>
-                      {action.icon}
-                    </span>
-                    {action.label}
-                  </button>
-                ))}
+                      <select
+                        value={selectedAssistant}
+                        onChange={(e) => setSelectedAssistant(e.target.value)}
+                        style={{
+                          backgroundColor: 'transparent',
+                          border: 'none',
+                          color: '#64748b',
+                          fontSize: '14px',
+                          cursor: 'pointer',
+                          outline: 'none',
+                          fontFamily: "'Outfit', sans-serif",
+                        }}
+                      >
+                        <option value="Assistente Geral">Assistente Geral</option>
+                        <option value="Calculadoras">Calculadora Conversacional</option>
+                        <option value="Pediatria">Pediatria</option>
+                      </select>
+                      {selectedAssistant === 'Calculadoras' && (
+                        <div style={{
+                          width: '20px',
+                          height: '20px',
+                          borderRadius: '50%',
+                          background: 'linear-gradient(135deg, #8b5cf6, #ec4899)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                    <button
+                      onClick={handleSendMessage}
+                      style={{
+                        width: '36px',
+                        height: '36px',
+                        borderRadius: '10px',
+                        background: inputValue.trim()
+                          ? 'linear-gradient(135deg, #8b5cf6, #ec4899)'
+                          : '#334155',
+                        border: 'none',
+                        cursor: inputValue.trim() ? 'pointer' : 'default',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        transition: 'all 0.2s',
+                        boxShadow: inputValue.trim()
+                          ? '0 4px 15px rgba(139, 92, 246, 0.4)'
+                          : 'none',
+                      }}
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                        <path d="M22 2L11 13M22 2L15 22L11 13L2 9L22 2Z" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Quick Actions */}
+                <div style={{
+                  display: 'flex',
+                  gap: '12px',
+                  flexWrap: 'wrap',
+                  justifyContent: 'center',
+                }}>
+                  {quickActions.map((action, index) => (
+                    <button
+                      key={index}
+                      onClick={() => {
+                        setInputValue(action.prompt);
+                        setSelectedAssistant(action.assistantType);
+                      }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '10px 16px',
+                        backgroundColor: '#1e293b',
+                        border: '1px solid #334155',
+                        borderRadius: '12px',
+                        color: '#94a3b8',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        fontFamily: "'Outfit', sans-serif",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.borderColor = '#8b5cf6';
+                        e.currentTarget.style.backgroundColor = 'rgba(139, 92, 246, 0.1)';
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.borderColor = '#334155';
+                        e.currentTarget.style.backgroundColor = '#1e293b';
+                        e.currentTarget.style.transform = 'translateY(0)';
+                      }}
+                    >
+                      <span style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        opacity: 0.9,
+                      }}>
+                        {action.icon}
+                      </span>
+                      {action.label}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
           </>
         ) : currentView === 'recording' ? (
           /* Recording Area */
@@ -2734,8 +2660,8 @@ Gere UMA pergunta de acompanhamento relevante e útil que eu possa fazer para ap
                     marginBottom: '24px',
                   }}>
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" strokeWidth="2">
-                      <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
-                      <circle cx="12" cy="7" r="4"/>
+                      <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+                      <circle cx="12" cy="7" r="4" />
                     </svg>
                     <h2 style={{
                       fontSize: '20px',
@@ -2909,10 +2835,10 @@ Gere UMA pergunta de acompanhamento relevante e útil que eu possa fazer para ap
                     marginBottom: '24px',
                   }}>
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ec4899" strokeWidth="2">
-                      <path d="M12 1a3 3 0 003 3v8a3 3 0 11-6 0V4a3 3 0 003-3z"/>
-                      <path d="M19 10v2a7 7 0 01-14 0v-2"/>
-                      <line x1="12" y1="19" x2="12" y2="23"/>
-                      <line x1="8" y1="23" x2="16" y2="23"/>
+                      <path d="M12 1a3 3 0 003 3v8a3 3 0 11-6 0V4a3 3 0 003-3z" />
+                      <path d="M19 10v2a7 7 0 01-14 0v-2" />
+                      <line x1="12" y1="19" x2="12" y2="23" />
+                      <line x1="8" y1="23" x2="16" y2="23" />
                     </svg>
                     <h2 style={{
                       fontSize: '20px',
@@ -2977,11 +2903,11 @@ Gere UMA pergunta de acompanhamento relevante e útil que eu possa fazer para ap
                   >
                     {isRecording ? (
                       <svg width={isMobile ? "32" : "48"} height={isMobile ? "32" : "48"} viewBox="0 0 24 24" fill="white">
-                        <rect x="6" y="6" width="12" height="12" rx="2"/>
+                        <rect x="6" y="6" width="12" height="12" rx="2" />
                       </svg>
                     ) : (
                       <svg width={isMobile ? "32" : "48"} height={isMobile ? "32" : "48"} viewBox="0 0 24 24" fill="white">
-                        <circle cx="12" cy="12" r="10"/>
+                        <circle cx="12" cy="12" r="10" />
                       </svg>
                     )}
                   </button>
@@ -3012,10 +2938,10 @@ Gere UMA pergunta de acompanhamento relevante e útil que eu possa fazer para ap
                   marginBottom: '16px',
                 }}>
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" strokeWidth="2">
-                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                    <line x1="16" y1="13" x2="8" y2="13"/>
-                    <line x1="16" y1="17" x2="8" y2="17"/>
+                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" />
+                    <line x1="16" y1="17" x2="8" y2="17" />
                   </svg>
                   <h3 style={{
                     fontSize: '18px',
@@ -3175,11 +3101,11 @@ Gere UMA pergunta de acompanhamento relevante e útil que eu possa fazer para ap
                         gap: '12px',
                       }}>
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" strokeWidth="2">
-                          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-                          <polyline points="14 2 14 8 20 8"/>
-                          <line x1="16" y1="13" x2="8" y2="13"/>
-                          <line x1="16" y1="17" x2="8" y2="17"/>
-                          <polyline points="10 9 9 9 8 9"/>
+                          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                          <polyline points="14 2 14 8 20 8" />
+                          <line x1="16" y1="13" x2="8" y2="13" />
+                          <line x1="16" y1="17" x2="8" y2="17" />
+                          <polyline points="10 9 9 9 8 9" />
                         </svg>
                         Prontuário Médico
                       </h3>
@@ -3455,8 +3381,8 @@ Gere UMA pergunta de acompanhamento relevante e útil que eu possa fazer para ap
                         color: '#64748b',
                       }}>
                         <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ margin: '0 auto 16px', opacity: 0.3 }}>
-                          <circle cx="11" cy="11" r="8"/>
-                          <path d="m21 21-4.35-4.35"/>
+                          <circle cx="11" cy="11" r="8" />
+                          <path d="m21 21-4.35-4.35" />
                         </svg>
                         <p style={{ fontSize: '15px', margin: 0 }}>
                           Nenhum escore encontrado
