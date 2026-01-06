@@ -1,0 +1,212 @@
+.soap-viewer {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.soap-viewer-empty {
+  text-align: center;
+  padding: 3rem;
+  color: #718096;
+}
+
+.soap-header {
+  background: #6b7280;
+  color: white;
+  padding: 2rem;
+  border-radius: 12px 12px 0 0;
+  margin-bottom: 0;
+}
+
+.soap-header h2 {
+  margin: 0 0 1rem 0;
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+
+.soap-patient-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.75rem;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.soap-patient-info p {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.soap-patient-info strong {
+  font-weight: 600;
+  margin-right: 0.5rem;
+}
+
+.soap-content {
+  background: white;
+  border-radius: 0 0 12px 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.soap-section {
+  padding: 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.soap-section:last-child {
+  border-bottom: none;
+}
+
+.soap-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid;
+}
+
+.soap-section.subjetivo .soap-section-header {
+  border-color: #6b7280;
+}
+
+.soap-section.objetivo .soap-section-header {
+  border-color: #6b7280;
+}
+
+.soap-section.avaliacao .soap-section-header {
+  border-color: #6b7280;
+}
+
+.soap-section.plano .soap-section-header {
+  border-color: #6b7280;
+}
+
+.soap-section-header h3 {
+  margin: 0;
+  font-size: 1.3rem;
+  color: #374151;
+  font-weight: 600;
+}
+
+.soap-section.subjetivo .soap-section-header h3 {
+  color: #374151;
+}
+
+.soap-section.objetivo .soap-section-header h3 {
+  color: #374151;
+}
+
+.soap-section.avaliacao .soap-section-header h3 {
+  color: #374151;
+}
+
+.soap-section.plano .soap-section-header h3 {
+  color: #374151;
+}
+
+.soap-badge {
+  background: #edf2f7;
+  color: #4a5568;
+  padding: 0.375rem 0.75rem;
+  border-radius: 16px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.soap-section-content {
+  background: #f7fafc;
+  padding: 1.25rem;
+  border-radius: 8px;
+  white-space: pre-wrap;
+  line-height: 1.7;
+  color: #2d3748;
+  font-size: 1rem;
+}
+
+.soap-footer {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: #fffaf0;
+  border: 2px solid #fbd38d;
+  border-radius: 8px;
+}
+
+.ai-disclaimer {
+  margin: 0;
+  color: #744210;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  text-align: center;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  .soap-viewer {
+    padding: 1rem;
+  }
+
+  .soap-header {
+    padding: 1.5rem;
+  }
+
+  .soap-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .soap-patient-info {
+    grid-template-columns: 1fr;
+  }
+
+  .soap-section {
+    padding: 1rem;
+  }
+
+  .soap-section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .soap-section-header h3 {
+    font-size: 1.1rem;
+  }
+
+  .soap-section-content {
+    font-size: 0.95rem;
+  }
+}
+
+/* Animações */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.soap-section {
+  animation: fadeInUp 0.5s ease;
+}
+
+.soap-section:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.soap-section:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.soap-section:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.soap-section:nth-child(4) {
+  animation-delay: 0.4s;
+}

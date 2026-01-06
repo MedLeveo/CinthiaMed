@@ -1,0 +1,156 @@
+.export-buttons-container {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-top: 1.5rem;
+}
+
+.export-section {
+  margin-bottom: 1.5rem;
+}
+
+.export-section:last-of-type {
+  margin-bottom: 1rem;
+}
+
+.export-section h3 {
+  font-size: 1.1rem;
+  color: #2d3748;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.button-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+}
+
+.export-btn {
+  padding: 0.875rem 1.25rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.export-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.export-btn:active {
+  transform: translateY(0);
+}
+
+/* Cores específicas por tipo */
+.btn-txt {
+  background: #6b7280;
+  color: white;
+}
+
+.btn-txt:hover {
+  background: #4b5563;
+}
+
+.btn-html {
+  background: #6b7280;
+  color: white;
+}
+
+.btn-html:hover {
+  background: #4b5563;
+}
+
+.btn-pdf {
+  background: #6b7280;
+  color: white;
+}
+
+.btn-pdf:hover {
+  background: #4b5563;
+}
+
+.btn-prescription {
+  background: #6b7280;
+  color: white;
+}
+
+.btn-prescription:hover {
+  background: #4b5563;
+}
+
+.btn-exam {
+  background: #6b7280;
+  color: white;
+}
+
+.btn-exam:hover {
+  background: #4b5563;
+}
+
+.btn-certificate {
+  background: #6b7280;
+  color: white;
+}
+
+.btn-certificate:hover {
+  background: #4b5563;
+}
+
+.disclaimer {
+  background: #fff5f5;
+  border-left: 4px solid #fc8181;
+  padding: 1rem;
+  border-radius: 6px;
+  margin-top: 1.5rem;
+}
+
+.disclaimer p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #742a2a;
+  line-height: 1.5;
+}
+
+.disclaimer strong {
+  color: #c53030;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  .button-group {
+    grid-template-columns: 1fr;
+  }
+
+  .export-btn {
+    width: 100%;
+  }
+}
+
+/* Animação de sucesso */
+@keyframes successPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.export-btn.success {
+  animation: successPulse 0.3s ease;
+}
