@@ -3428,13 +3428,7 @@ Gere UMA pergunta de acompanhamento relevante e útil que eu possa fazer para ap
         )}
       </main>
 
-      {/* Tool Panel - Painel lateral de ferramentas clínicas */}
-      {selectedTool && (
-        <ToolPanel
-          tool={selectedTool}
-          onClose={() => setSelectedTool(null)}
-        />
-      )}
+
     </div>
   );
 };
